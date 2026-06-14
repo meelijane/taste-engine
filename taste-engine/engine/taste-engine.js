@@ -153,6 +153,10 @@ class TasteEngine {
       const seed = [...d].reduce((s, c) => (s * 31 + c.charCodeAt(0)) >>> 0, 7);
       window.TasteBackdrop.start({ seed });
     }
+    // Any "Save my result" button (profile / visual / summary) → export PNG.
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-export]') && window.TasteExport) window.TasteExport.download(this);
+    });
   }
 
   _showScreen(id) {
@@ -513,6 +517,7 @@ class TasteEngine {
         <div class="te-divider"></div>
         <p class="te-eyebrow">Based on</p>
         <div class="te-picks-row" id="te-profile-picks"></div>
+        <button class="te-export-btn" data-export>↓ Save my result</button>
         <div class="te-nudge" id="te-profile-nudge">
           <span class="te-nudge-arrow">→</span>
           <p class="te-nudge-label">See everything</p>
@@ -533,6 +538,7 @@ class TasteEngine {
       <div class="te-hidden" id="te-visual-result">
         <div class="te-radar-wrap"><canvas id="te-radar" width="320" height="300"></canvas></div>
         <div class="te-tag-cloud" id="te-visual-tags" style="justify-content:center"></div>
+        <button class="te-export-btn" data-export>↓ Save my result</button>
         <div class="te-nudge" id="te-visual-nudge">
           <span class="te-nudge-arrow">→</span>
           <p class="te-nudge-label">See everything</p>
@@ -649,6 +655,7 @@ class TasteEngine {
     try {
       const text = await this._callClaude(prompt, this.config.profileSystemPrompt);
       const data = JSON.parse(text.replace(/```json|```/g, '').trim());
+      this._lastProfile = data;
 
       document.getElementById('te-profile-title').textContent = data.title;
       document.getElementById('te-profile-body').innerHTML = data.body.replace(/\n/g, '<br><br>');
@@ -1125,6 +1132,12 @@ class TasteEngine {
       const pill = document.createElement('div');
       pill.className = 'te-pick-pill'; pill.textContent = c.name; sumPicks.appendChild(pill);
     });
+
+    if (!summaryContent.querySelector('[data-export]')) {
+      const btn = document.createElement('button');
+      btn.className = 'te-export-btn'; btn.setAttribute('data-export', ''); btn.textContent = '↓ Save my result';
+      summaryContent.appendChild(btn);
+    }
 
     summaryLoading.classList.add('te-hidden');
     summaryContent.classList.remove('te-hidden');

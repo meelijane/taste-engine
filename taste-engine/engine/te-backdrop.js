@@ -1,19 +1,22 @@
 // ══════════════════════════════════════════════════════
-// QUIET CURRENTS — generative flow-field backdrop
-// A calm, themeable particle current that lives BEHIND the
-// content. Vanilla canvas (no deps), seeded, performant,
-// and respectful of prefers-reduced-motion. See
-// te-backdrop-philosophy.md for the why.
+// GEOMETRIC BACKDROP
+// Seeded, themeable geometric pattern that lives BEHIND the
+// content: a handful of large overlapping shapes (rects /
+// circles / triangles), each clipped and filled with a line
+// texture (hatch / crosshatch / dots / waves / rings) in the
+// section's two accent colours. Layered largest-first, low
+// opacity, static (calm + cheap). Inspired by pxl-pshr's
+// geometric-pattern-generator.
 //
-//   TasteBackdrop.start({ accent, bg, seed })
+//   TasteBackdrop.start({ accent, accent2, bg, seed })
 //
-// accent / bg default to the page's --accent / --bg CSS vars,
-// so calling start() again after a theme change re-skins it.
+// accent / accent2 / bg default to the page's CSS vars, so
+// calling start() again after a theme change re-skins it.
 // ══════════════════════════════════════════════════════
 (function () {
-  const TWO_PI = Math.PI * 2;
+  const TAU = Math.PI * 2;
 
-  // Small seeded PRNG (mulberry32) so a seed reproduces the same release pattern.
+  // Seeded PRNG (mulberry32) — same seed reproduces the same pattern.
   function rng(seed) {
     let a = seed >>> 0;
     return function () {
@@ -43,18 +46,19 @@
     const n = m.match(/\d+/g) || [0, 0, 0];
     return { r: +n[0], g: +n[1], b: +n[2] };
   }
+  const rgb = c => `rgb(${c.r},${c.g},${c.b})`;
+  const rgba = (c, a) => `rgba(${c.r},${c.g},${c.b},${a})`;
 
   const Backdrop = {
-    _raf: null,
     _canvas: null,
 
     start(opts) {
       opts = opts || {};
-      const accent = toRGB(opts.accent || cssVar('--accent', '#E0698A'));
-      const bg = toRGB(opts.bg || cssVar('--bg', '#12141B'));
+      const accent = toRGB(opts.accent || cssVar('--accent', '#FF5C9A'));
+      const accent2 = toRGB(opts.accent2 || cssVar('--accent2', '#2EC5FF'));
+      const bg = toRGB(opts.bg || cssVar('--bg', '#0D0B11'));
       const seed = (opts.seed != null ? opts.seed : 1337) >>> 0;
 
-      // One canvas, reused across theme changes / re-inits.
       let canvas = this._canvas || document.getElementById('te-backdrop');
       if (!canvas) {
         canvas = document.createElement('canvas');
@@ -62,91 +66,94 @@
         document.body.insertBefore(canvas, document.body.firstChild);
       }
       this._canvas = canvas;
-      // Fade the whole backdrop in (and on re-skin) so the colour never snaps.
-      canvas.style.transition = 'opacity 0.9s ease';
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      canvas.style.transition = reduce ? 'none' : 'opacity 0.9s ease';
       canvas.style.opacity = '0';
       requestAnimationFrame(() => { canvas.style.opacity = '1'; });
+
       const ctx = canvas.getContext('2d');
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      let W, H;
+      const colors = [accent, accent2];
 
-      if (this._raf) cancelAnimationFrame(this._raf);
-      this._raf = null;
-
-      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      let W, H, particles;
-      const COUNT = 360;        // sparse — long ribbons, not dense fur
-      const STEP = 1.35;        // longer step → flowing strokes
-      const FADE = 0.028;       // slow reclaim → ribbons linger
-      const STROKE = 0.07;      // faint; the image is the accumulation
-
-      // Lower spatial frequency → broad, smooth currents instead of tight curls.
-      const field = (x, y, t) =>
-        TWO_PI * (
-          Math.sin(x * 0.00092 + t * 0.00015) +
-          Math.cos(y * 0.00104 - t * 0.00012) +
-          0.5 * Math.sin((x + y) * 0.00058 + t * 0.00005)
-        );
-
-      const rand = rng(seed);
-      function seedParticles() {
-        particles = [];
-        for (let i = 0; i < COUNT; i++) {
-          particles.push({ x: rand() * W, y: rand() * H, life: 170 + rand() * 280 });
+      // ── line textures, drawn inside the current clip ──
+      function texture(kind, R) {
+        const span = R * 1.7, gap = 14;
+        if (kind === 'hatch' || kind === 'cross') {
+          for (let x = -span; x <= span; x += gap) { ctx.beginPath(); ctx.moveTo(x, -span); ctx.lineTo(x, span); ctx.stroke(); }
+          if (kind === 'cross') for (let y = -span; y <= span; y += gap) { ctx.beginPath(); ctx.moveTo(-span, y); ctx.lineTo(span, y); ctx.stroke(); }
+        } else if (kind === 'dots') {
+          for (let x = -span; x <= span; x += 16) for (let y = -span; y <= span; y += 16) { ctx.beginPath(); ctx.arc(x, y, 1.7, 0, TAU); ctx.fill(); }
+        } else if (kind === 'waves') {
+          const amp = 5, wl = 28;
+          for (let y = -span; y <= span; y += gap) {
+            ctx.beginPath();
+            for (let x = -span; x <= span; x += 4) { const yy = y + Math.sin((x / wl) * TAU) * amp; x === -span ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy); }
+            ctx.stroke();
+          }
+        } else { // rings
+          for (let r = 9; r < span; r += 15) { ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke(); }
         }
       }
 
-      function resize() {
+      function shapePath(type, R) {
+        ctx.beginPath();
+        if (type === 'circle') ctx.arc(0, 0, R / 2, 0, TAU);
+        else if (type === 'triangle') {
+          const r = R / 2;
+          for (let k = 0; k < 3; k++) { const a = -Math.PI / 2 + k * (TAU / 3); const x = Math.cos(a) * r, y = Math.sin(a) * r; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+          ctx.closePath();
+        } else ctx.rect(-R / 2, -R / 2, R, R);
+      }
+
+      function render() {
         W = window.innerWidth; H = window.innerHeight;
         canvas.width = Math.floor(W * dpr); canvas.height = Math.floor(H * dpr);
         canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.fillStyle = `rgb(${bg.r},${bg.g},${bg.b})`;
-        ctx.fillRect(0, 0, W, H);
-        seedParticles();
-      }
+        ctx.fillStyle = rgb(bg); ctx.fillRect(0, 0, W, H);
 
-      const fadeCol = `rgba(${bg.r},${bg.g},${bg.b},${FADE})`;
-      const strokeCol = `rgba(${accent.r},${accent.g},${accent.b},${STROKE})`;
-
-      function tick(frame) {
-        ctx.fillStyle = fadeCol;
-        ctx.fillRect(0, 0, W, H);
-        ctx.strokeStyle = strokeCol;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        const t = frame;
-        for (const p of particles) {
-          const a = field(p.x, p.y, t);
-          const nx = p.x + Math.cos(a) * STEP;
-          const ny = p.y + Math.sin(a) * STEP;
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(nx, ny);
-          p.x = nx; p.y = ny; p.life--;
-          if (p.life < 0 || nx < 0 || nx > W || ny < 0 || ny > H) {
-            p.x = rand() * W; p.y = rand() * H; p.life = 170 + rand() * 280;
-          }
+        const rand = rng(seed);
+        const base = Math.max(W, H);
+        const TYPES = ['rect', 'circle', 'triangle', 'rect'];
+        const TEX = ['hatch', 'hatch', 'cross', 'dots', 'waves', 'rings'];
+        const shapes = [];
+        for (let i = 0; i < 13; i++) {
+          shapes.push({
+            type: TYPES[(rand() * TYPES.length) | 0],
+            cx: rand() * W, cy: rand() * H,
+            R: (0.20 + rand() * 0.45) * base,
+            rot: rand() * Math.PI,
+            texRot: rand() * Math.PI,
+            col: colors[(rand() * colors.length) | 0],
+            alpha: 0.05 + rand() * 0.07
+          });
         }
-        ctx.stroke();
+        shapes.sort((a, b) => b.R - a.R); // largest first
+
+        shapes.forEach(s => {
+          ctx.save();
+          ctx.translate(s.cx, s.cy); ctx.rotate(s.rot);
+          shapePath(s.type, s.R); ctx.clip();
+          // soft colour wash within the shape
+          ctx.globalAlpha = s.alpha * 0.6;
+          ctx.fillStyle = rgba(s.col, 1);
+          ctx.fillRect(-s.R, -s.R, s.R * 2, s.R * 2);
+          // line texture on top
+          ctx.globalAlpha = Math.min(0.5, s.alpha * 2.4);
+          ctx.strokeStyle = rgba(s.col, 1);
+          ctx.lineWidth = 1.4;
+          ctx.rotate(s.texRot);
+          texture(TEX[(rng(seed + s.cx | 0)() * TEX.length) | 0], s.R);
+          ctx.restore();
+        });
+        ctx.globalAlpha = 1;
       }
 
-      resize();
-      window.removeEventListener('resize', this._onResize || (() => {}));
-      this._onResize = () => resize();
+      render();
+      if (this._onResize) window.removeEventListener('resize', this._onResize);
+      this._onResize = () => render();
       window.addEventListener('resize', this._onResize);
-
-      if (reduce) {
-        // Settle instantly into a single composed still frame.
-        for (let f = 0; f < 320; f++) tick(f * 4);
-        return;
-      }
-
-      let frame = 0;
-      const loop = () => {
-        // Pause when the tab is hidden — no wasted cycles.
-        if (!document.hidden) { tick(frame); frame += 1; }
-        this._raf = requestAnimationFrame(loop);
-      };
-      this._raf = requestAnimationFrame(loop);
     }
   };
 

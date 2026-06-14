@@ -281,6 +281,17 @@ body::before {
 
 .te-hidden { display: none !important; }
 
+/* ── EXPORT (save result) ── */
+.te-export-btn {
+  display: inline-flex; align-items: center; gap: 9px; margin-top: 26px;
+  padding: 14px 24px; border: none; border-radius: 999px;
+  background: var(--accent2); color: var(--on-accent2);
+  font-family: var(--display); font-weight: 700; font-size: 14px; letter-spacing: -0.01em;
+  cursor: pointer; transition: transform 0.12s, filter 0.15s;
+}
+.te-export-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.te-export-btn:active { transform: translateY(0); }
+
 /* ── ADD SCREEN ── */
 .te-add-input { width: 100%; max-width: 520px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 16px; color: var(--text); font-family: var(--body); outline: none; margin-bottom: 12px; }
 .te-add-input:focus { border-color: var(--accent); }
@@ -311,8 +322,27 @@ body::before {
 #te-rec-cards, #te-sum-recs { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; }
 #te-rec-cards .te-rec-card, #te-sum-recs .te-rec-card { margin-bottom: 0; }
 
+/* ── ENTRANCE STAGGER (motion design) ── */
+@keyframes te-fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.te-home-grid > *, #te-rec-cards > *, #te-sum-recs > *, .te-tag-cloud > * {
+  animation: te-fade-up 0.5s var(--ease) both;
+}
+.te-home-grid > :nth-child(1), #te-rec-cards > :nth-child(1), #te-sum-recs > :nth-child(1) { animation-delay: 0.06s; }
+.te-home-grid > :nth-child(2), #te-rec-cards > :nth-child(2), #te-sum-recs > :nth-child(2) { animation-delay: 0.13s; }
+.te-home-grid > :nth-child(3), #te-rec-cards > :nth-child(3), #te-sum-recs > :nth-child(3) { animation-delay: 0.20s; }
+.te-home-grid > :nth-child(4), #te-rec-cards > :nth-child(4), #te-sum-recs > :nth-child(4) { animation-delay: 0.27s; }
+.te-home-grid > :nth-child(5) { animation-delay: 0.34s; }
+.te-home-grid > :nth-child(6) { animation-delay: 0.41s; }
+.te-tag-cloud > :nth-child(1) { animation-delay: 0.05s; }
+.te-tag-cloud > :nth-child(2) { animation-delay: 0.10s; }
+.te-tag-cloud > :nth-child(3) { animation-delay: 0.15s; }
+.te-tag-cloud > :nth-child(4) { animation-delay: 0.20s; }
+.te-tag-cloud > :nth-child(5) { animation-delay: 0.25s; }
+.te-tag-cloud > :nth-child(n+6) { animation-delay: 0.30s; }
+
 /* ── REDUCED MOTION ── */
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: 0.001ms !important; }
-  .te-screen.active { animation: none; }
+  .te-screen.active, .te-home-grid > *, #te-rec-cards > *, #te-sum-recs > *,
+  .te-tag-cloud > *, .te-domain-grid { animation: none !important; }
 }

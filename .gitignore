@@ -1,0 +1,7 @@
+.DS_Store
+.claude/
+**/.DS_Store
+taste-engine/node_modules/
+taste-engine/.env
+taste-engine/test-results/
+taste-engine/playwright-report/
