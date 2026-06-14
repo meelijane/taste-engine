@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comedy Taste</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg:          #0E1A14;
+  --surface:     #152019;
+  --surface2:    #1C2B22;
+  --border:      #2A3D31;
+  --accent:      #E8874A;
+  --accent-dim:  #3D2A18;
+  --accent2:     #4A90A4;
+  --accent2-dim: #1A3040;
+  --text:        #EDE8E0;
+  --text-muted:  #7A9184;
+  --text-dim:    #4A6358;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; max-width: 480px; margin: 0 auto; }
+
+.screen { display: none; min-height: 100vh; padding: 48px 24px 200px; }
+.screen.active { display: block; }
+
+.eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); margin-bottom: 10px; }
+.display { font-family: 'Playfair Display', Georgia, serif; font-size: 36px; line-height: 1.1; color: var(--text); margin-bottom: 10px; }
+.display em { font-style: italic; color: var(--accent); }
+.subtitle { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 32px; }
+
+.back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 24px; font-family: 'Inter', sans-serif; }
+
+.card { border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 10px; background: var(--surface); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.card:hover { border-color: var(--accent); background: var(--surface2); }
+.card.featured { border-color: rgba(232,135,74,0.4); background: linear-gradient(135deg, var(--surface2), var(--surface)); }
+.card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.card-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; padding-left: 46px; }
+
+.search-wrap { position: relative; margin-bottom: 20px; }
+.search-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px 11px 38px; font-size: 14px; color: var(--text); font-family: 'Inter', sans-serif; outline: none; }
+.search-input::placeholder { color: var(--text-dim); }
+.search-input:focus { border-color: var(--accent); }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 14px; pointer-events: none; }
+
+.group-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); margin: 18px 0 8px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip { padding: 7px 13px; border-radius: 999px; font-size: 13px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer; transition: all 0.15s; user-select: none; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+.chip.hidden { display: none; }
+
+.sticky-footer { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: rgba(14,26,20,0.95); backdrop-filter: blur(12px); padding: 14px 24px 28px; border-top: 1px solid var(--border); z-index: 100; }
+.progress-bar { height: 3px; background: var(--surface2); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+.cta-btn { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s; }
+.cta-btn:disabled { opacity: 0.35; cursor: default; }
+.cta-btn .badge { background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.footer-note { font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 8px; }
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
+.tag { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.tag-lg { background: var(--accent); color: #fff; font-size: 13px; padding: 7px 16px; }
+.tag-md { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+.tag-sm { background: var(--surface); color: var(--text-dim); font-size: 11px; border: 1px solid var(--border); }
+
+.divider { height: 1px; background: var(--border); margin: 24px 0; }
+.result-body { font-size: 14px; line-height: 1.75; color: var(--text-muted); margin-bottom: 24px; }
+.result-body strong { color: var(--text); }
+
+/* ── NUDGE → SUMMARY ── */
+.nudge { border: 1px solid var(--border); border-radius: 14px; padding: 16px; background: var(--surface); margin-top: 20px; cursor: pointer; transition: border-color 0.2s; }
+.nudge:hover { border-color: var(--accent); }
+.nudge-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 6px; }
+.nudge-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.nudge-sub { font-size: 12px; color: var(--text-muted); }
+.nudge-arrow { float: right; color: var(--accent); font-size: 18px; line-height: 1; }
+
+.radar-wrap { display: flex; justify-content: center; margin: 8px 0 20px; }
+
+/* ── REC CARDS ── */
+.rec-card { border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; background: var(--surface); }
+.rec-header { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+.mini-radar-wrap { display: flex; justify-content: center; padding: 4px 0; }
+.rec-header-text { flex: 1; min-width: 0; }
+.rec-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+.rec-name { font-weight: 600; font-size: 15px; color: var(--text); }
+.match-pill { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-dim); padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; margin-left: 8px; }
+.rec-reason { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
+.rec-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.rec-tag { font-size: 11px; padding: 3px 9px; border-radius: 999px; background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+.rec-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); }
+.already-like-btn { font-size: 12px; font-weight: 500; color: var(--text-muted); background: none; border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s; }
+.already-like-btn:hover { border-color: var(--accent); color: var(--accent); }
+.already-like-btn.added { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); cursor: default; }
+
+/* ── RECALCULATE BTN ── */
+.recalc-bar { display: none; background: var(--surface2); border: 1px solid var(--accent); border-radius: 12px; padding: 10px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.recalc-bar.hidden { display: none !important; }
+.recalc-label { font-size: 13px; color: var(--text-muted); }
+.recalc-label span { color: var(--accent); font-weight: 600; }
+.recalc-btn { font-size: 13px; font-weight: 600; color: var(--accent); background: none; border: 1px solid var(--accent); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; transition: background 0.15s; }
+.recalc-btn:hover { background: var(--accent-dim); }
+
+/* ── MINI RADAR ── */
+.mini-radar-wrap { flex-shrink: 0; }
+
+/* ── SUMMARY SCREEN ── */
+.summary-section { margin-bottom: 28px; }
+.summary-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 12px; }
+.summary-profile-title { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-style: italic; color: var(--text); margin-bottom: 8px; }
+.summary-profile-body { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+
+/* ── ADD COMEDIAN ── */
+.add-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 15px; color: var(--text); font-family: 'Inter', sans-serif; outline: none; margin-bottom: 10px; }
+.add-input:focus { border-color: var(--accent); }
+.add-input::placeholder { color: var(--text-dim); }
+.outline-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--accent); border-radius: 10px; color: var(--accent); font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: background 0.2s; }
+.outline-btn:hover { background: var(--accent-dim); }
+.outline-btn:disabled { opacity: 0.4; cursor: default; }
+
+.loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 32px; color: var(--text-muted); font-size: 14px; }
+.spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.hidden { display: none !important; }
+.selected-summary { display: flex; flex-wrap: wrap; gap: 6px; }
+.selected-pill { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 500; }
+
+@media (max-width: 400px) { .display { font-size: 30px; } }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <p class="eyebrow">Comedy Taste</p>
+  <h1 class="display">What kind of funny do you <em>actually</em> like?</h1>
+  <p class="subtitle">Pick the comedians you love. Find out what that says about you.</p>
+  <div class="card featured" onclick="startMode('profile')">
+    <div class="card-top"><div class="card-icon">🎭</div><span class="card-name">Your Comedy Profile</span></div>
+    <p class="card-desc">A portrait of your taste in words — what you love and why.</p>
+  </div>
+  <div class="card" onclick="startMode('visual')">
+    <div class="card-top"><div class="card-icon">🕸️</div><span class="card-name">Visualise Your Taste</span></div>
+    <p class="card-desc">See your preferences mapped across style, tone, and edge.</p>
+  </div>
+  <div class="card" onclick="startMode('recommend')">
+    <div class="card-top"><div class="card-icon">✦</div><span class="card-name">Recommend Me Someone</span></div>
+    <p class="card-desc">Discover comedians you've probably never heard of but will love.</p>
+  </div>
+  <div class="card" onclick="showScreen('screen-add')">
+    <div class="card-top"><div class="card-icon">＋</div><span class="card-name">Add a Comedian</span></div>
+    <p class="card-desc">Someone missing? Add them and Claude will tag their style.</p>
+  </div>
+</div>
+
+<!-- PICKER -->
+<div class="screen" id="screen-picker">
+  <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+  <h2 class="display" style="font-size:28px" id="picker-title">Who makes you laugh?</h2>
+  <p class="subtitle">Pick at least 5. <span id="selected-count" style="color:var(--accent);font-weight:600">0 selected</span></p>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" placeholder="Search comedians…" id="search-input" oninput="filterChips()">
+  </div>
+  <div id="chip-container"></div>
+  <div class="sticky-footer">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <button class="cta-btn" id="cta-btn" disabled onclick="runMode()">
+      <span id="cta-label">Select at least 5</span>
+      <span class="badge hidden" id="cta-badge">0</span>
+    </button>
+    <p class="footer-note" id="footer-note">Pick comedians you genuinely enjoy</p>
+  </div>
+</div>
+
+<!-- PROFILE RESULT -->
+<div class="screen" id="screen-profile">
+  <button class="back-btn" onclick="showScreen('screen-picker')">← Change my picks</button>
+  <p class="eyebrow">Your Comedy Profile</p>
+  <div id="profile-loading" class="loading"><div class="spinner"></div> Analysing your taste…</div>
+  <div id="profile-result" class="hidden">
+    <h2 class="display" style="font-size:30px;font-style:italic" id="profile-title"></h2>
+    <div class="result-body" id="profile-body"></div>
+    <div class="tag-cloud" id="profile-tags"></div>
+    <div class="divider"></div>
+    <p class="eyebrow">Based on</p>
+    <div class="selected-summary" id="profile-picks"></div>
+    <div class="nudge" onclick="showScreen('screen-summary')" style="margin-top:24px">
+      <span class="nudge-arrow">→</span>
+      <p class="nudge-label">See everything</p>
+      <p class="nudge-title">📋 Full summary</p>
+      <p class="nudge-sub">Profile + radar + recommendations on one page</p>
+    </div>
+  </div>
+</div>
+
+<!-- VISUAL RESULT -->
+<div class="screen" id="screen-visual">
+  <button class="back-btn" onclick="showScreen('screen-picker')">← Change my picks</button>
+  <p class="eyebrow">Your Taste Map</p>
+  <h2 class="display" style="font-size:28px;margin-bottom:20px">What your picks say, visually.</h2>
+  <div id="visual-loading" class="loading"><div class="spinner"></div> Building your taste map…</div>
+  <div id="visual-result" class="hidden">
+    <div class="radar-wrap"><canvas id="radar-canvas" width="320" height="300"></canvas></div>
+    <div class="tag-cloud" id="visual-tags" style="justify-content:center"></div>
+    <div class="nudge" onclick="showScreen('screen-summary')">
+      <span class="nudge-arrow">→</span>
+      <p class="nudge-label">See everything</p>
+      <p class="nudge-title">📋 Full summary</p>
+      <p class="nudge-sub">Profile + radar + recommendations on one page</p>
+    </div>
+  </div>
+</div>
+
+<!-- RECOMMEND RESULT -->
+<div class="screen" id="screen-recommend">
+  <button class="back-btn" onclick="showScreen('screen-picker')">← Change my picks</button>
+  <p class="eyebrow">You Might Like</p>
+  <h2 class="display" style="font-size:28px;margin-bottom:6px">Comedians picked for you.</h2>
+  <p class="subtitle" id="rec-subtitle"></p>
+  <div id="recalc-bar" class="recalc-bar hidden">
+    <p class="recalc-label"><span id="recalc-count">0</span> added to your picks</p>
+    <button class="recalc-btn" onclick="recalculate()">Recalculate →</button>
+  </div>
+  <div id="rec-loading" class="loading"><div class="spinner"></div> Finding your matches…</div>
+  <div id="rec-result" class="hidden">
+    <div id="rec-cards"></div>
+    <div class="nudge" onclick="showScreen('screen-summary')">
+      <span class="nudge-arrow">→</span>
+      <p class="nudge-label">See everything</p>
+      <p class="nudge-title">📋 Full summary</p>
+      <p class="nudge-sub">Profile + radar + recommendations on one page</p>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY SCREEN -->
+<div class="screen" id="screen-summary">
+  <button class="back-btn" onclick="showScreen('screen-home')">← Home</button>
+  <p class="eyebrow">Your Comedy Taste</p>
+  <div id="summary-loading" class="loading"><div class="spinner"></div> Building your summary…</div>
+  <div id="summary-content" class="hidden">
+
+    <div class="summary-section">
+      <p class="summary-section-title">🎭 Your profile</p>
+      <p class="summary-profile-title" id="sum-profile-title"></p>
+      <div class="tag-cloud" id="sum-profile-tags"></div>
+      <p class="summary-profile-body" id="sum-profile-body"></p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="summary-section">
+      <p class="summary-section-title">🕸️ Your taste map</p>
+      <div class="radar-wrap"><canvas id="summary-radar" width="300" height="280"></canvas></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="summary-section">
+      <p class="summary-section-title">✦ Recommended for you</p>
+      <div id="sum-rec-cards"></div>
+    </div>
+
+    <div class="summary-section">
+      <p class="summary-section-title">Based on</p>
+      <div class="selected-summary" id="sum-picks"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD A COMEDIAN -->
+<div class="screen" id="screen-add">
+  <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+  <p class="eyebrow">Add a Comedian</p>
+  <h2 class="display" style="font-size:28px;margin-bottom:8px">Someone missing?</h2>
+  <p class="subtitle">Type their name and Claude will analyse their comedic style and add them to the database.</p>
+  <input class="add-input" type="text" id="add-name-input" placeholder="e.g. Dylan Moran" oninput="document.getElementById('add-btn').disabled = !this.value.trim()">
+  <button class="outline-btn" id="add-btn" disabled onclick="addComedian()">Analyse their style →</button>
+  <div id="add-loading" class="loading hidden"><div class="spinner"></div> Analysing…</div>
+  <div id="add-result" class="hidden" style="margin-top:20px">
+    <div class="divider"></div>
+    <p class="eyebrow" style="margin-bottom:8px">Analysis complete</p>
+    <p style="font-weight:600;font-size:16px;color:var(--text);margin-bottom:14px" id="add-result-name"></p>
+    <div class="tag-cloud" id="add-result-tags"></div>
+    <p class="result-body" id="add-result-bio" style="margin-bottom:20px"></p>
+    <button class="cta-btn" id="add-confirm-btn" onclick="confirmAddComedian()">Add to database</button>
+    <p class="footer-note" style="margin-top:10px">They'll appear in the picker for everyone</p>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════
+const COMEDIANS = [
+  { name:"Brennan Lee Mulligan", group:"Dropout", tags:["animated","warm","improvisational","character-driven","manic"] },
+  { name:"Zac Oyama", group:"Dropout", tags:["deadpan","dry","understated","technical","wry"] },
+  { name:"Josh Ruben", group:"Dropout", tags:["animated","character-driven","improvisational","silly","warm"] },
+  { name:"Ally Beardsley", group:"Dropout", tags:["conceptual","absurdist","deadpan","dry","wry"] },
+  { name:"Vic Michaelis", group:"Dropout", tags:["character-driven","animated","warm","improvisational","silly"] },
+  { name:"Anna Garcia", group:"Dropout", tags:["physical","animated","silly","warm","improvisational"] },
+  { name:"Kimia Behpoornia", group:"Dropout", tags:["character-driven","animated","warm","silly","improvisational"] },
+  { name:"Jacob Wysocki", group:"Dropout", tags:["deadpan","dry","understated","wry","observational"] },
+  { name:"Brian David Gilbert", group:"Dropout", tags:["technical","conceptual","meta","musical","manic","absurdist"] },
+  { name:"Demi Adejuyigbe", group:"Dropout", tags:["technical","conceptual","musical","meta","whimsical","warm"] },
+  { name:"Grant O'Brien", group:"Dropout", tags:["animated","silly","improvisational","warm","physical"] },
+  { name:"Caitlin Reilly", group:"Dropout", tags:["character-driven","observational","animated","warm","self-deprecating"] },
+  { name:"Lisa Gilroy", group:"Dropout", tags:["animated","warm","character-driven","improvisational","silly"] },
+  { name:"Sam Reich", group:"Dropout", tags:["dry","wry","improvisational","warm","observational"] },
+  { name:"James Acaster", group:"Taskmaster (UK)", tags:["conceptual","deadpan","absurdist","technical","dark","meta"] },
+  { name:"Noel Fielding", group:"Taskmaster (UK)", tags:["surreal","whimsical","character-driven","absurdist","warm"] },
+  { name:"Phil Wang", group:"Taskmaster (UK)", tags:["observational","dry","wry","conceptual","understated"] },
+  { name:"Romesh Ranganathan", group:"Taskmaster (UK)", tags:["deadpan","acerbic","dry","self-deprecating","dark","observational"] },
+  { name:"Guy Montgomery", group:"Guy Mont Spelling Bee", tags:["warm","wry","observational","understated","dry"] },
+  { name:"Aaron Chen", group:"Guy Mont Spelling Bee", tags:["silly","physical","warm","improvisational","manic"] },
+  { name:"Sam Campbell", group:"Guy Mont Spelling Bee", tags:["surreal","absurdist","manic","silly","conceptual","cult"] },
+  { name:"Wil Anderson", group:"Guy Mont Spelling Bee", tags:["observational","acerbic","dry","wry","laconic"] },
+  { name:"Nina Oyama", group:"Guy Mont Spelling Bee", tags:["warm","observational","self-deprecating","animated","wry"] },
+  { name:"Josh Thomas", group:"Guy Mont Spelling Bee", tags:["self-deprecating","observational","deadpan","dry","earnest","dark"] },
+  { name:"Luke McGregor", group:"Guy Mont Spelling Bee", tags:["self-deprecating","warm","earnest","understated","observational"] },
+  { name:"Urzila Carlson", group:"Guy Mont Spelling Bee", tags:["observational","warm","acerbic","animated","self-deprecating"] },
+  { name:"Tom Ballard", group:"Guy Mont Spelling Bee", tags:["acerbic","dark","observational","transgressive","earnest"] },
+  { name:"Hannah Gadsby", group:"Guy Mont Spelling Bee", tags:["conceptual","earnest","dark","meta","observational","transgressive"] },
+  { name:"Rhys Nicholson", group:"Guy Mont Spelling Bee", tags:["animated","acerbic","self-deprecating","dark","wry"] },
+  { name:"Tim Minchin", group:"Guy Mont Spelling Bee", tags:["musical","technical","conceptual","dark","transgressive","wry"] },
+  { name:"Tom Gleeson", group:"Guy Mont Spelling Bee", tags:["acerbic","dry","deadpan","observational","wry"] },
+  { name:"Zoë Coombs Marr", group:"Guy Mont Spelling Bee", tags:["character-driven","meta","conceptual","absurdist","dark","transgressive"] },
+  { name:"Geraldine Hickey", group:"Guy Mont Spelling Bee", tags:["warm","observational","wry","understated","self-deprecating"] },
+  { name:"Mark Bonanno", group:"Aunty Donna", tags:["manic","physical","absurdist","silly","animated"] },
+  { name:"Broden Kelly", group:"Aunty Donna", tags:["deadpan","absurdist","surreal","understated","character-driven"] },
+  { name:"Zachary Ruane", group:"Aunty Donna", tags:["self-deprecating","surreal","silly","warm","absurdist"] },
+  { name:"Michelle Brasier", group:"Aunty Donna", tags:["musical","conceptual","warm","whimsical","animated"] },
+  { name:"Stewart Lee", group:"British Panel Shows", tags:["technical","meta","acerbic","conceptual","dry","transgressive","cult"] },
+  { name:"Bill Bailey", group:"British Panel Shows", tags:["musical","absurdist","whimsical","conceptual","warm"] },
+  { name:"David Mitchell", group:"British Panel Shows", tags:["observational","acerbic","technical","dry","wry","animated"] },
+  { name:"Lee Mack", group:"British Panel Shows", tags:["physical","warm","improvisational","silly","quick-witted"] },
+  { name:"Rob Brydon", group:"British Panel Shows", tags:["character-driven","warm","improvisational","wry","musical"] },
+  { name:"David O'Doherty", group:"British Panel Shows", tags:["musical","whimsical","warm","understated","self-deprecating"] },
+  { name:"Nish Kumar", group:"British Panel Shows", tags:["observational","earnest","animated","acerbic","wry"] },
+  { name:"Richard Ayoade", group:"British Panel Shows", tags:["deadpan","dry","meta","understated","wry","technical"] },
+  { name:"Matt Berry", group:"British Panel Shows", tags:["character-driven","deadpan","absurdist","dry","wry","musical"] },
+  { name:"Julian Barratt", group:"British Panel Shows", tags:["surreal","dark","character-driven","absurdist","deadpan"] },
+  { name:"Will Ferrell", group:"SNL Alumni", tags:["physical","manic","character-driven","silly","animated","mainstream"] },
+  { name:"Tina Fey", group:"SNL Alumni", tags:["technical","observational","dry","wry","acerbic","mainstream"] },
+  { name:"Chris Rock", group:"SNL Alumni", tags:["observational","acerbic","technical","animated","dark","earnest","mainstream"] },
+  { name:"Amy Poehler", group:"SNL Alumni", tags:["warm","improvisational","animated","character-driven","silly","mainstream"] },
+  { name:"Adam Sandler", group:"SNL Alumni", tags:["silly","musical","warm","character-driven","physical","mainstream"] },
+  { name:"Bill Hader", group:"SNL Alumni", tags:["character-driven","technical","deadpan","animated","acerbic"] },
+  { name:"John Mulaney", group:"SNL Alumni", tags:["technical","observational","animated","warm","self-deprecating","wry","mainstream"] },
+  { name:"Kristen Wiig", group:"SNL Alumni", tags:["character-driven","physical","deadpan","absurdist","animated"] },
+  { name:"Fred Armisen", group:"SNL Alumni", tags:["character-driven","deadpan","absurdist","technical","dry"] },
+  { name:"Kate McKinnon", group:"SNL Alumni", tags:["character-driven","physical","manic","animated","surreal"] },
+  { name:"Steve Martin", group:"SNL Alumni", tags:["technical","physical","absurdist","conceptual","wry","deadpan"] },
+  { name:"Bill Murray", group:"SNL Alumni", tags:["deadpan","dry","understated","laconic","wry","mainstream"] },
+  { name:"Pete Davidson", group:"SNL Alumni", tags:["self-deprecating","observational","dark","earnest","laconic"] },
+  { name:"Seth Meyers", group:"SNL Alumni", tags:["observational","dry","wry","acerbic","technical","mainstream"] },
+  { name:"Ali Wong", group:"Stand-up / Netflix", tags:["observational","acerbic","animated","transgressive","self-deprecating","earnest","mainstream"] },
+  { name:"Hasan Minhaj", group:"Stand-up / Netflix", tags:["observational","conceptual","animated","technical","earnest","mainstream"] },
+  { name:"Bo Burnham", group:"Stand-up / Netflix", tags:["musical","conceptual","meta","dark","technical","earnest","transgressive"] },
+  { name:"Aziz Ansari", group:"Stand-up / Netflix", tags:["observational","dry","wry","conceptual","understated","mainstream"] },
+  { name:"Iliza Shlesinger", group:"Stand-up / Netflix", tags:["animated","observational","physical","acerbic","warm","mainstream"] },
+  { name:"Kyle Kinane", group:"Stand-up / Netflix", tags:["observational","dark","warm","dry","self-deprecating","laconic","cult"] },
+  { name:"Josh Johnson", group:"Stand-up / Netflix", tags:["observational","conceptual","animated","earnest","technical","mainstream"] },
+  { name:"Natasha Leggero", group:"Stand-up / Netflix", tags:["acerbic","dry","character-driven","dark","transgressive","wry","mainstream"] },
+  { name:"Chris Fleming", group:"Stand-up / Netflix", tags:["character-driven","absurdist","physical","surreal","manic","whimsical","cult"] },
+  { name:"Maria Bamford", group:"Stand-up / Netflix", tags:["meta","dark","self-deprecating","conceptual","character-driven","earnest","cult"] },
+  { name:"Hannah Einbinder", group:"Stand-up / Netflix", tags:["deadpan","dry","observational","dark","wry","self-deprecating"] },
+  { name:"George Carlin", group:"Stand-up / Netflix", tags:["observational","acerbic","dark","conceptual","transgressive","technical","offensive"] },
+  { name:"Jerry Seinfeld", group:"Stand-up / Netflix", tags:["observational","technical","dry","wry","deadpan","laconic","clean","mainstream"] },
+  { name:"Dave Chappelle", group:"Stand-up / Netflix", tags:["observational","acerbic","dark","animated","transgressive","conceptual","offensive","mainstream"] },
+  { name:"Patton Oswalt", group:"Stand-up / Netflix", tags:["observational","conceptual","dark","technical","animated","self-deprecating"] },
+  { name:"Tig Notaro", group:"Stand-up / Netflix", tags:["deadpan","understated","dark","earnest","laconic","observational","cult"] },
+  { name:"Bill Burr", group:"Stand-up / Netflix", tags:["observational","acerbic","dark","animated","offensive","mainstream"] },
+];
+
+const AXES = [
+  { label:'Technical',       tags:['technical','conceptual','meta'] },
+  { label:'Absurdist',       tags:['absurdist','surreal','whimsical'] },
+  { label:'Dark',            tags:['dark','transgressive','offensive','acerbic'] },
+  { label:'Physical',        tags:['physical','manic','animated'] },
+  { label:'Warm',            tags:['warm','earnest','self-deprecating'] },
+  { label:'Mainstream',      tags:['mainstream','clean','observational'] },
+  { label:'Improvisational', tags:['improvisational','character-driven','silly'] },
+  { label:'Deadpan',         tags:['deadpan','dry','laconic','understated','wry'] },
+];
+
+let userAddedComedians = [];
+let currentMode = null;
+let selected = new Set();
+let pendingAlreadyLike = 0; // count of "already like" adds pending recalc
+let cachedProfile = null;   // { title, body, topTags } — reused in summary
+let cachedRecData = null;   // recommendations array — reused in summary
+const MIN_PICKS = 5;
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'screen-summary') buildSummary();
+}
+
+function startMode(mode) {
+  currentMode = mode;
+  buildPicker();
+  updatePickerUI();
+  const ctaLabels = { profile:'Build my profile', visual:'Visualise my taste', recommend:'Find my matches' };
+  document.getElementById('cta-label').textContent = ctaLabels[mode];
+  showScreen('screen-picker');
+}
+
+// ══════════════════════════════════════════════════════
+// PICKER
+// ══════════════════════════════════════════════════════
+function allComedians() { return [...COMEDIANS, ...userAddedComedians]; }
+
+function buildPicker() {
+  const container = document.getElementById('chip-container');
+  container.innerHTML = '';
+  const groups = {};
+  allComedians().forEach(c => { if (!groups[c.group]) groups[c.group] = []; groups[c.group].push(c); });
+  Object.entries(groups).forEach(([group, comedians]) => {
+    const label = document.createElement('div');
+    label.className = 'group-label';
+    label.textContent = group;
+    container.appendChild(label);
+    const row = document.createElement('div');
+    row.className = 'chip-row';
+    comedians.forEach(c => {
+      const chip = document.createElement('div');
+      chip.className = 'chip' + (selected.has(c.name) ? ' on' : '');
+      chip.textContent = c.name;
+      chip.dataset.name = c.name;
+      chip.onclick = () => toggleChip(c.name, chip);
+      row.appendChild(chip);
+    });
+    container.appendChild(row);
+  });
+}
+
+function toggleChip(name, chip) {
+  if (selected.has(name)) { selected.delete(name); chip.classList.remove('on'); }
+  else { selected.add(name); chip.classList.add('on'); }
+  updatePickerUI();
+}
+
+function updatePickerUI() {
+  const n = selected.size;
+  document.getElementById('selected-count').textContent = `${n} selected`;
+  document.getElementById('progress-fill').style.width = Math.min((n / MIN_PICKS) * 100, 100) + '%';
+  const btn = document.getElementById('cta-btn');
+  const badge = document.getElementById('cta-badge');
+  btn.disabled = n < MIN_PICKS;
+  if (n >= MIN_PICKS) {
+    badge.textContent = n; badge.classList.remove('hidden');
+    document.getElementById('footer-note').textContent = `${n} comedians selected`;
+  } else {
+    badge.classList.add('hidden');
+    document.getElementById('footer-note').textContent = `Pick ${MIN_PICKS - n} more to continue`;
+  }
+}
+
+function filterChips() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  document.querySelectorAll('#chip-container .chip').forEach(chip => chip.classList.toggle('hidden', !chip.dataset.name.toLowerCase().includes(q)));
+  document.querySelectorAll('#chip-container .group-label').forEach(label => {
+    const next = label.nextElementSibling;
+    if (!next) return;
+    const visible = [...next.querySelectorAll('.chip')].some(c => !c.classList.contains('hidden'));
+    label.style.display = visible ? '' : 'none';
+    next.style.display = visible ? '' : 'none';
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// TAG SCORING
+// ══════════════════════════════════════════════════════
+function getTagScores() {
+  const scores = {};
+  const picks = allComedians().filter(c => selected.has(c.name));
+  picks.forEach(c => c.tags.forEach(t => { scores[t] = (scores[t] || 0) + 1; }));
+  const max = Math.max(...Object.values(scores), 1);
+  const norm = {};
+  Object.entries(scores).forEach(([t, v]) => norm[t] = v / max);
+  return { raw: scores, norm, picks };
+}
+
+function topTags(scores, n) {
+  return Object.entries(scores).sort((a,b) => b[1]-a[1]).slice(0, n).map(e => e[0]);
+}
+
+function getAxisScores(norm) {
+  return AXES.map(ax => {
+    const vals = ax.tags.map(t => norm[t] || 0);
+    return vals.reduce((a,b) => a+b, 0) / ax.tags.length;
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// COMEDIAN TAG SCORES (for mini radar)
+// ══════════════════════════════════════════════════════
+function getComedianAxisScores(comedian) {
+  const norm = {};
+  comedian.tags.forEach(t => norm[t] = 1);
+  return getAxisScores(norm);
+}
+
+// ══════════════════════════════════════════════════════
+// CLAUDE API
+// ══════════════════════════════════════════════════════
+async function callClaude(prompt, system) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system, messages:[{role:'user',content:prompt}] })
+  });
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+// ══════════════════════════════════════════════════════
+// MODES
+// ══════════════════════════════════════════════════════
+async function runMode() {
+  if (currentMode === 'profile') await runProfile();
+  else if (currentMode === 'visual') await runVisual();
+  else if (currentMode === 'recommend') await runRecommend();
+}
+
+// ── PROFILE ──
+async function runProfile() {
+  showScreen('screen-profile');
+  document.getElementById('profile-loading').classList.remove('hidden');
+  document.getElementById('profile-result').classList.add('hidden');
+
+  const { raw, picks } = getTagScores();
+  const top = topTags(raw, 8);
+
+  const system = `You are a witty, warm comedy critic writing a short personalised taste profile. Be specific and avoid clichés. Respond ONLY with JSON: { "title": "2-4 word archetype title", "body": "2 short paragraphs max 80 words total", "topTags": ["tag1","tag2","tag3","tag4","tag5"] }`;
+  const prompt = `The user likes: ${picks.map(c=>c.name).join(', ')}. Top tags: ${top.join(', ')}. Write their comedy taste profile. Title like "The Thoughtful Provocateur".`;
+
+  try {
+    const text = await callClaude(prompt, system);
+    const data = JSON.parse(text.replace(/```json|```/g,'').trim());
+    cachedProfile = data;
+
+    document.getElementById('profile-title').textContent = data.title;
+    document.getElementById('profile-body').innerHTML = data.body.replace(/\n/g,'<br><br>');
+
+    const tagCloud = document.getElementById('profile-tags');
+    tagCloud.innerHTML = '';
+    data.topTags.forEach((t,i) => {
+      const span = document.createElement('span');
+      span.className = 'tag ' + (i<2?'tag-lg':i<4?'tag-md':'tag-sm');
+      span.textContent = t; tagCloud.appendChild(span);
+    });
+
+    const picksEl = document.getElementById('profile-picks');
+    picksEl.innerHTML = '';
+    picks.slice(0,5).forEach(c => {
+      const pill = document.createElement('div');
+      pill.className = 'selected-pill'; pill.textContent = c.name; picksEl.appendChild(pill);
+    });
+    if (picks.length > 5) {
+      const more = document.createElement('span');
+      more.style.cssText = 'font-size:12px;color:var(--text-dim);align-self:center';
+      more.textContent = `+${picks.length-5} more`; picksEl.appendChild(more);
+    }
+
+    document.getElementById('profile-loading').classList.add('hidden');
+    document.getElementById('profile-result').classList.remove('hidden');
+  } catch(e) {
+    document.getElementById('profile-loading').innerHTML = '<p style="color:var(--text-muted)">Something went wrong. Please try again.</p>';
+  }
+}
+
+// ── VISUAL ──
+async function runVisual() {
+  showScreen('screen-visual');
+  document.getElementById('visual-loading').classList.remove('hidden');
+  document.getElementById('visual-result').classList.add('hidden');
+
+  const { norm } = getTagScores();
+  const scores = getAxisScores(norm);
+
+  await new Promise(r => setTimeout(r, 500));
+  drawRadar('radar-canvas', AXES.map(a=>a.label), scores);
+
+  const sorted = AXES.map((a,i) => ({label:a.label, score:scores[i]})).sort((a,b)=>b.score-a.score);
+  const tagEl = document.getElementById('visual-tags');
+  tagEl.innerHTML = '';
+  sorted.forEach((s,i) => {
+    if (s.score < 0.05) return;
+    const span = document.createElement('span');
+    span.className = 'tag '+(i===0?'tag-lg':i<3?'tag-md':'tag-sm');
+    span.textContent = s.label+(i<2?' ↑↑':i<4?' ↑':'');
+    tagEl.appendChild(span);
+  });
+
+  document.getElementById('visual-loading').classList.add('hidden');
+  document.getElementById('visual-result').classList.remove('hidden');
+}
+
+// ── RECOMMEND ──
+async function runRecommend() {
+  showScreen('screen-recommend');
+  pendingAlreadyLike = 0;
+  document.getElementById('recalc-bar').classList.add('hidden');
+  document.getElementById('rec-loading').classList.remove('hidden');
+  document.getElementById('rec-result').classList.add('hidden');
+
+  const { raw, picks } = getTagScores();
+  const top = topTags(raw, 8);
+  const names = picks.map(c => c.name);
+  document.getElementById('rec-subtitle').textContent = `Based on your ${names.length} picks.`;
+
+  const notSelected = allComedians().filter(c => !selected.has(c.name));
+  const db = notSelected.map(c => `${c.name} (${c.tags.join(', ')})`).join('\n');
+
+  const system = `You are a knowledgeable comedy expert making personalised recommendations. Be specific, reference actual picks. Respond ONLY with JSON: { "recommendations": [ { "name": "...", "reason": "1-2 sentences", "tags": ["tag1","tag2","tag3"], "match": 85 } ] }. Return exactly 4.`;
+  const prompt = `User likes: ${names.join(', ')}. Top tags: ${top.join(', ')}. Recommend 4 from:\n${db}`;
+
+  try {
+    const text = await callClaude(prompt, system);
+    const data = JSON.parse(text.replace(/```json|```/g,'').trim());
+    cachedRecData = data.recommendations;
+
+    renderRecCards(data.recommendations);
+    document.getElementById('rec-loading').classList.add('hidden');
+    document.getElementById('rec-result').classList.remove('hidden');
+  } catch(e) {
+    document.getElementById('rec-loading').innerHTML = '<p style="color:var(--text-muted)">Something went wrong. Please try again.</p>';
+  }
+}
+
+function renderRecCards(recs) {
+  const { norm } = getTagScores();
+  const myScores = getAxisScores(norm);
+
+  const container = document.getElementById('rec-cards');
+  container.innerHTML = '';
+  recs.forEach((rec, idx) => {
+    const comedian = allComedians().find(c => c.name === rec.name);
+    const recScores = comedian ? getComedianAxisScores(comedian) : null;
+    const safeId = 'rec-' + rec.name.replace(/[^a-z0-9]/gi,'-');
+    const miniId = 'mini-radar-' + idx;
+
+    const card = document.createElement('div');
+    card.className = 'rec-card';
+    card.innerHTML = `
+      <div class="rec-header">
+        <div class="rec-header-text">
+          <div class="rec-top">
+            <p class="rec-name">${rec.name}</p>
+            <span class="match-pill">${rec.match}% match</span>
+          </div>
+          <p class="rec-reason">${rec.reason}</p>
+          <div class="rec-tags">${rec.tags.map(t=>`<span class="rec-tag">${t}</span>`).join('')}</div>
+        </div>
+        ${recScores ? `<div class="mini-radar-wrap"><canvas id="${miniId}" width="280" height="280"></canvas></div>` : ''}
+      </div>
+      <div class="rec-footer">
+        <button class="already-like-btn" id="${safeId}">I already like them</button>
+      </div>
+    `;
+    container.appendChild(card);
+
+    if (recScores) drawMiniRadar(miniId, myScores, recScores);
+
+    document.getElementById(safeId).addEventListener('click', (e) => alreadyLike(rec.name, safeId, e.target));
+  });
+}
+
+// ── ALREADY LIKE + RECALCULATE ──
+function alreadyLike(name, btnId, btn) {
+  selected.add(name);
+  pendingAlreadyLike++;
+  btn.textContent = '✓ Added';
+  btn.classList.add('added');
+  btn.disabled = true;
+
+  const bar = document.getElementById('recalc-bar');
+  bar.classList.remove('hidden');
+  document.getElementById('recalc-count').textContent = pendingAlreadyLike;
+}
+
+function recalculate() {
+  runRecommend();
+}
+
+// ══════════════════════════════════════════════════════
+// SUMMARY
+// ══════════════════════════════════════════════════════
+async function buildSummary() {
+  document.getElementById('summary-loading').classList.remove('hidden');
+  document.getElementById('summary-content').classList.add('hidden');
+
+  const { raw, norm, picks } = getTagScores();
+  const myScores = getAxisScores(norm);
+
+  // Profile — use cache or fetch fresh
+  if (!cachedProfile) {
+    const top = topTags(raw, 8);
+    const system = `You are a witty comedy critic. Respond ONLY with JSON: { "title": "archetype title", "body": "2 paragraphs max 80 words", "topTags": ["tag1","tag2","tag3","tag4","tag5"] }`;
+    const prompt = `User likes: ${picks.map(c=>c.name).join(', ')}. Top tags: ${top.join(', ')}. Write their comedy taste profile.`;
+    try {
+      const text = await callClaude(prompt, system);
+      cachedProfile = JSON.parse(text.replace(/```json|```/g,'').trim());
+    } catch(e) { cachedProfile = { title: 'Your Taste', body: '', topTags: topTags(raw, 5) }; }
+  }
+
+  // Recs — use cache or fetch fresh
+  if (!cachedRecData) {
+    const top = topTags(raw, 8);
+    const notSelected = allComedians().filter(c => !selected.has(c.name));
+    const db = notSelected.map(c => `${c.name} (${c.tags.join(', ')})`).join('\n');
+    const system = `Comedy expert. Respond ONLY with JSON: { "recommendations": [ { "name":"...", "reason":"1-2 sentences", "tags":["t1","t2","t3"], "match":85 } ] }. Return exactly 4.`;
+    const prompt = `User likes: ${picks.map(c=>c.name).join(', ')}. Top tags: ${top.join(', ')}. Recommend 4 from:\n${db}`;
+    try {
+      const text = await callClaude(prompt, system);
+      cachedRecData = JSON.parse(text.replace(/```json|```/g,'').trim()).recommendations;
+    } catch(e) { cachedRecData = []; }
+  }
+
+  // Render profile section
+  document.getElementById('sum-profile-title').textContent = cachedProfile.title;
+  document.getElementById('sum-profile-body').innerHTML = cachedProfile.body.replace(/\n/g,'<br><br>');
+  const sumTags = document.getElementById('sum-profile-tags');
+  sumTags.innerHTML = '';
+  cachedProfile.topTags.forEach((t,i) => {
+    const span = document.createElement('span');
+    span.className = 'tag '+(i<2?'tag-lg':i<4?'tag-md':'tag-sm');
+    span.textContent = t; sumTags.appendChild(span);
+  });
+
+  // Render radar
+  await new Promise(r => setTimeout(r, 100));
+  drawRadar('summary-radar', AXES.map(a=>a.label), myScores);
+
+  // Render rec cards (compact, no already-like)
+  const recContainer = document.getElementById('sum-rec-cards');
+  recContainer.innerHTML = '';
+  cachedRecData.forEach((rec, idx) => {
+    const comedian = allComedians().find(c => c.name === rec.name);
+    const recScores = comedian ? getComedianAxisScores(comedian) : null;
+    const miniId = 'sum-mini-' + idx;
+    const card = document.createElement('div');
+    card.className = 'rec-card';
+    card.innerHTML = `
+      <div class="rec-header">
+        <div class="rec-header-text">
+          <div class="rec-top">
+            <p class="rec-name">${rec.name}</p>
+            <span class="match-pill">${rec.match}% match</span>
+          </div>
+          <p class="rec-reason">${rec.reason}</p>
+          <div class="rec-tags">${rec.tags.map(t=>`<span class="rec-tag">${t}</span>`).join('')}</div>
+        </div>
+        ${recScores ? `<div class="mini-radar-wrap"><canvas id="${miniId}" width="280" height="280"></canvas></div>` : ''}
+      </div>
+    `;
+    recContainer.appendChild(card);
+    if (recScores) drawMiniRadar(miniId, myScores, recScores);
+  });
+
+  // Picks
+  const sumPicks = document.getElementById('sum-picks');
+  sumPicks.innerHTML = '';
+  picks.forEach(c => {
+    const pill = document.createElement('div');
+    pill.className = 'selected-pill'; pill.textContent = c.name; sumPicks.appendChild(pill);
+  });
+
+  document.getElementById('summary-loading').classList.add('hidden');
+  document.getElementById('summary-content').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════════
+// RADAR DRAWING
+// ══════════════════════════════════════════════════════
+function drawRadar(canvasId, labels, scores, secondScores) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2+10;
+  const R = Math.min(W,H)/2 - 40;
+  const N = labels.length;
+
+  ctx.clearRect(0,0,W,H);
+  const angle = i => (i/N)*Math.PI*2 - Math.PI/2;
+  const pt = (i,r) => ({ x: cx+Math.cos(angle(i))*r, y: cy+Math.sin(angle(i))*r });
+
+  // Grid
+  [0.25,0.5,0.75,1].forEach(f => {
+    ctx.beginPath();
+    for(let i=0;i<N;i++){const p=pt(i,R*f);i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);}
+    ctx.closePath(); ctx.strokeStyle='#2A3D31'; ctx.lineWidth=1; ctx.stroke();
+  });
+  for(let i=0;i<N;i++){const p=pt(i,R);ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(p.x,p.y);ctx.strokeStyle='#2A3D31';ctx.lineWidth=1;ctx.stroke();}
+
+  // My scores
+  ctx.beginPath();
+  scores.forEach((s,i)=>{const p=pt(i,R*Math.max(s,0.05));i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+  ctx.closePath(); ctx.fillStyle='rgba(232,135,74,0.18)'; ctx.fill();
+  ctx.strokeStyle='#E8874A'; ctx.lineWidth=2; ctx.stroke();
+  scores.forEach((s,i)=>{const p=pt(i,R*Math.max(s,0.05));ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fillStyle='#E8874A';ctx.fill();});
+
+  // Labels
+  ctx.font='11px Inter,sans-serif'; ctx.fillStyle='#7A9184'; ctx.textAlign='center';
+  labels.forEach((label,i)=>{const p=pt(i,R+22);ctx.fillText(label,p.x,p.y+4);});
+}
+
+function drawMiniRadar(canvasId, myScores, recScores) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const LABEL_PAD = 36;
+  const R = Math.min(W,H)/2 - LABEL_PAD;
+  const N = myScores.length;
+  const LABELS = AXES.map(a => a.label);
+
+  ctx.clearRect(0,0,W,H);
+  const angle = i => (i/N)*Math.PI*2 - Math.PI/2;
+  const pt = (i,r) => ({ x: cx+Math.cos(angle(i))*r, y: cy+Math.sin(angle(i))*r });
+
+  // Grid rings
+  [0.25, 0.5, 0.75, 1].forEach(f => {
+    ctx.beginPath();
+    for(let i=0;i<N;i++){const p=pt(i,R*f);i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);}
+    ctx.closePath(); ctx.strokeStyle='#3A5040'; ctx.lineWidth=1; ctx.stroke();
+  });
+
+  // Spokes
+  for(let i=0;i<N;i++){
+    const p=pt(i,R);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle='#3A5040';ctx.lineWidth=1;ctx.stroke();
+  }
+
+  // My scores (terracotta)
+  ctx.beginPath();
+  myScores.forEach((s,i)=>{const p=pt(i,R*Math.max(s,0.05));i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+  ctx.closePath(); ctx.fillStyle='rgba(232,135,74,0.25)'; ctx.fill();
+  ctx.strokeStyle='#E8874A'; ctx.lineWidth=2.5; ctx.stroke();
+  // Dots
+  myScores.forEach((s,i)=>{const p=pt(i,R*Math.max(s,0.05));ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fillStyle='#E8874A';ctx.fill();});
+
+  // Rec scores (blue)
+  ctx.beginPath();
+  recScores.forEach((s,i)=>{const p=pt(i,R*Math.max(s,0.05));i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+  ctx.closePath(); ctx.fillStyle='rgba(74,144,164,0.25)'; ctx.fill();
+  ctx.strokeStyle='#4A90A4'; ctx.lineWidth=2.5; ctx.stroke();
+  // Dots
+  recScores.forEach((s,i)=>{const p=pt(i,R*Math.max(s,0.05));ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fillStyle='#4A90A4';ctx.fill();});
+
+  // Labels
+  ctx.font = 'bold 9px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  LABELS.forEach((label, i) => {
+    const p = pt(i, R + 16);
+    // Highlight labels where rec scores notably higher
+    const diff = recScores[i] - myScores[i];
+    ctx.fillStyle = diff > 0.3 ? '#4A90A4' : diff < -0.3 ? '#E8874A' : '#9AB8A8';
+    ctx.fillText(label, p.x, p.y + 4);
+  });
+
+  // Legend
+  ctx.font = '9px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#E8874A';
+  ctx.fillRect(8, H-22, 10, 10);
+  ctx.fillStyle = '#9AB8A8';
+  ctx.fillText('You', 22, H-13);
+  ctx.fillStyle = '#4A90A4';
+  ctx.fillRect(50, H-22, 10, 10);
+  ctx.fillStyle = '#9AB8A8';
+  ctx.fillText('Them', 64, H-13);
+}
+
+// ══════════════════════════════════════════════════════
+// ADD A COMEDIAN
+// ══════════════════════════════════════════════════════
+let pendingComedian = null;
+
+async function addComedian() {
+  const name = document.getElementById('add-name-input').value.trim();
+  if (!name) return;
+  document.getElementById('add-btn').disabled = true;
+  document.getElementById('add-loading').classList.remove('hidden');
+  document.getElementById('add-result').classList.add('hidden');
+
+  const system = `Comedy expert tagging style. Respond ONLY with JSON: { "bio": "1 sentence", "tags": ["tag1","tag2","tag3","tag4","tag5"] }. Tags from: technical, absurdist, observational, conceptual, surreal, deadpan, physical, animated, understated, manic, laconic, warm, acerbic, dry, dark, whimsical, earnest, transgressive, wry, silly, character-driven, improvisational, musical, meta, self-deprecating, offensive, clean, mainstream, cult, quick-witted`;
+  const prompt = `Analyse comedic style of: ${name}.`;
+
+  try {
+    const text = await callClaude(prompt, system);
+    const data = JSON.parse(text.replace(/```json|```/g,'').trim());
+    pendingComedian = { name, group:'User Added', tags:data.tags };
+    document.getElementById('add-result-name').textContent = name;
+    document.getElementById('add-result-bio').textContent = data.bio;
+    const tagEl = document.getElementById('add-result-tags');
+    tagEl.innerHTML = '';
+    data.tags.forEach((t,i)=>{const span=document.createElement('span');span.className='tag '+(i<2?'tag-lg':i<4?'tag-md':'tag-sm');span.textContent=t;tagEl.appendChild(span);});
+    document.getElementById('add-loading').classList.add('hidden');
+    document.getElementById('add-result').classList.remove('hidden');
+  } catch(e) {
+    document.getElementById('add-loading').innerHTML='<p style="color:var(--text-muted)">Something went wrong.</p>';
+    document.getElementById('add-btn').disabled=false;
+  }
+}
+
+function confirmAddComedian() {
+  if (!pendingComedian) return;
+  userAddedComedians.push(pendingComedian);
+  try { window.storage.set('user-added-comedians', JSON.stringify(userAddedComedians), true); } catch(e) {}
+  document.getElementById('add-name-input').value='';
+  document.getElementById('add-result').classList.add('hidden');
+  document.getElementById('add-btn').disabled=true;
+  pendingComedian=null;
+  const btn=document.getElementById('add-confirm-btn');
+  btn.textContent='✓ Added!';
+  setTimeout(()=>{ btn.textContent='Add to database'; showScreen('screen-home'); },1200);
+}
+
+// ══════════════════════════════════════════════════════
+// LOAD STORAGE
+// ══════════════════════════════════════════════════════
+(async()=>{
+  try {
+    const result = await window.storage.get('user-added-comedians', true);
+    if (result && result.value) userAddedComedians = JSON.parse(result.value);
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

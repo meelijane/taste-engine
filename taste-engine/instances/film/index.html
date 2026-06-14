@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Film Taste</title>
+<link rel="stylesheet" href="../../engine/taste-engine.css">
+</head>
+<body>
+
+<nav class="te-topnav">
+  <div class="te-topnav-inner">
+    <a class="te-topnav-logo" href="/">✦ Taste Engine</a>
+    <div class="te-topnav-links">
+    <a href="/instances/comedy/" data-domain="comedy">Comedy</a>
+    <a href="/instances/music/" data-domain="music">Music</a>
+    <a href="/instances/tv/" data-domain="tv">TV</a>
+    <a href="/instances/film/" data-domain="film">Film</a>
+    <a href="/instances/books/" data-domain="books">Books</a>
+    <a href="/instances/podcasts/" data-domain="podcasts">Podcasts</a>
+    </div>
+  </div>
+</nav>
+<script>
+  (function(){var p=location.pathname;document.querySelectorAll('.te-topnav-links a').forEach(function(a){if(p.indexOf('/instances/'+a.getAttribute('data-domain')+'/')===0)a.classList.add('on');});})();
+</script>
+
+<!-- The engine renders into these screens -->
+<div class="te-screen" id="te-home"></div>
+<div class="te-screen" id="te-picker"></div>
+<div class="te-screen" id="te-profile"></div>
+<div class="te-screen" id="te-visual"></div>
+<div class="te-screen" id="te-recommend"></div>
+<div class="te-screen" id="te-add"></div>
+<div class="te-screen" id="te-summary">
+  <button class="te-back" onclick="engine._showScreen('te-home')">← Home</button>
+  <p class="te-eyebrow">Your Film Taste</p>
+  <div class="te-loading" id="te-summary-loading"><div class="te-spinner"></div> Building your summary…</div>
+  <div class="te-hidden" id="te-summary-content">
+    <div class="te-summary-section">
+      <p class="te-summary-section-title">🎭 Your profile</p>
+      <p class="te-sum-profile-title" id="te-sum-title"></p>
+      <div class="te-tag-cloud" id="te-sum-tags"></div>
+      <p class="te-sum-profile-body" id="te-sum-body"></p>
+    </div>
+    <div class="te-divider"></div>
+    <div class="te-summary-section">
+      <p class="te-summary-section-title">🕸️ Your taste map</p>
+      <div class="te-radar-wrap"><canvas id="te-sum-radar" width="300" height="280"></canvas></div>
+    </div>
+    <div class="te-divider"></div>
+    <div class="te-summary-section">
+      <p class="te-summary-section-title">✦ Recommended for you</p>
+      <div id="te-sum-recs"></div>
+    </div>
+    <div class="te-summary-section">
+      <p class="te-summary-section-title">Based on</p>
+      <div class="te-picks-row" id="te-sum-picks"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../../engine/te-backdrop.js"></script>
+<script src="../../engine/local-shim.js"></script>
+<script src="../../engine/taste-engine.js"></script>
+<script>
+  window.engine = new TasteEngine();
+  engine.loadFromFiles('./').then(() => engine.init());
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+# Tagging
+
+- Aaron Chen | silly, physical, warm, improvisational, manic
+- Adam Sandler | silly, musical, warm, character-driven, physical, mainstream
+- Ali Wong | observational, acerbic, animated, transgressive, self-deprecating, earnest, mainstream
+- Ally Beardsley | conceptual, absurdist, deadpan, dry, wry
+- Amy Poehler | warm, improvisational, animated, character-driven, silly, mainstream
+- Anna Garcia | physical, animated, silly, warm, improvisational
+- Aziz Ansari | observational, dry, wry, conceptual, understated, mainstream
+- Bill Bailey | musical, absurdist, whimsical, conceptual, warm
+- Bill Burr | observational, acerbic, dark, animated, offensive, mainstream
+- Bill Hader | character-driven, technical, deadpan, animated, acerbic
+- Bill Murray | deadpan, dry, understated, laconic, wry, mainstream
+- Bo Burnham | musical, conceptual, meta, dark, technical, earnest, transgressive
+- Brennan Lee Mulligan | animated, warm, improvisational, character-driven, manic
+- Brian David Gilbert | technical, conceptual, meta, musical, manic, absurdist
+- Broden Kelly | deadpan, absurdist, surreal, understated, character-driven
+- Caitlin Reilly | character-driven, observational, animated, warm, self-deprecating
+- Chris Rock | observational, acerbic, technical, animated, dark, earnest, mainstream
+- Dave Chappelle | observational, acerbic, dark, animated, transgressive, conceptual, offensive, mainstream
+- David Mitchell | observational, acerbic, technical, dry, wry, animated
+- David O'Doherty | musical, whimsical, warm, understated, self-deprecating
+- Demi Adejuyigbe | technical, conceptual, musical, meta, whimsical, warm
+- Fred Armisen | character-driven, deadpan, absurdist, technical, dry
+- George Carlin | observational, acerbic, dark, conceptual, transgressive, technical, offensive
+- Geraldine Hickey | warm, observational, wry, understated, self-deprecating
+- Grant O'Brien | animated, silly, improvisational, warm, physical
+- Guy Montgomery | warm, wry, observational, understated, dry
+- Hannah Einbinder | deadpan, dry, observational, dark, wry, self-deprecating
+- Hannah Gadsby | conceptual, earnest, dark, meta, observational, transgressive
+- Hasan Minhaj | observational, conceptual, animated, technical, earnest, mainstream
+- Iliza Shlesinger | animated, observational, physical, acerbic, warm, mainstream
+- Jacob Wysocki | deadpan, dry, understated, wry, observational
+- James Acaster | conceptual, deadpan, absurdist, technical, dark, meta
+- Jerry Seinfeld | observational, technical, dry, wry, deadpan, laconic, clean, mainstream
+- Josh Ruben | animated, character-driven, improvisational, silly, warm
+- Josh Thomas | self-deprecating, observational, deadpan, dry, earnest, dark
+- Julian Barratt | surreal, dark, character-driven, absurdist, deadpan
+- Kate McKinnon | character-driven, physical, manic, animated, surreal
+- Kimia Behpoornia | character-driven, animated, warm, silly, improvisational
+- Kristen Wiig | character-driven, physical, deadpan, absurdist, animated
+- Lee Mack | physical, warm, improvisational, silly, quick-witted
+- Lisa Gilroy | animated, warm, character-driven, improvisational, silly
+- Luke McGregor | self-deprecating, warm, earnest, understated, observational
+- Mark Bonanno | manic, physical, absurdist, silly, animated
+- Matt Berry | character-driven, deadpan, absurdist, dry, wry, musical
+- Michelle Brasier | musical, conceptual, warm, whimsical, animated
+- Nina Oyama | warm, observational, self-deprecating, animated, wry
+- Nish Kumar | observational, earnest, animated, acerbic, wry
+- Noel Fielding | surreal, whimsical, character-driven, absurdist, warm
+- Patton Oswalt | observational, conceptual, dark, technical, animated, self-deprecating
+- Pete Davidson | self-deprecating, observational, dark, earnest, laconic
+- Phil Wang | observational, dry, wry, conceptual, understated
+- Rhys Nicholson | animated, acerbic, self-deprecating, dark, wry
+- Richard Ayoade | deadpan, dry, meta, understated, wry, technical
+- Rob Brydon | character-driven, warm, improvisational, wry, musical
+- Sam Campbell | surreal, absurdist, manic, silly, conceptual, cult
+- Sam Reich | dry, wry, improvisational, warm, observational
+- Seth Meyers | observational, dry, wry, acerbic, technical, mainstream
+- Steve Martin | technical, physical, absurdist, conceptual, wry, deadpan
+- Stewart Lee | technical, meta, acerbic, conceptual, dry, transgressive, cult
+- Tina Fey | technical, observational, dry, wry, acerbic, mainstream
+- Tig Notaro | deadpan, understated, dark, earnest, laconic, observational, cult
+- Tim Minchin | musical, technical, conceptual, dark, transgressive, wry
+- Tom Ballard | acerbic, dark, observational, transgressive, earnest
+- Tom Gleeson | acerbic, dry, deadpan, observational, wry
+- Urzila Carlson | observational, warm, acerbic, animated, self-deprecating
+- Vic Michaelis | character-driven, animated, warm, improvisational, silly
+- Wil Anderson | observational, acerbic, dry, wry, laconic
+- Will Ferrell | physical, manic, character-driven, silly, animated, mainstream
+- Zachary Ruane | self-deprecating, surreal, silly, warm, absurdist
+- Zac Oyama | deadpan, dry, understated, technical, wry
+- Zoë Coombs Marr | character-driven, meta, conceptual, absurdist, dark, transgressive
+- Kyle Kinane | observational, dark, warm, dry, self-deprecating, laconic, cult
+- Josh Johnson | observational, conceptual, animated, earnest, technical, mainstream
+- Natasha Leggero | acerbic, dry, character-driven, dark, transgressive, wry, mainstream
+- Chris Fleming | character-driven, absurdist, physical, surreal, manic, whimsical, cult
+- Maria Bamford | meta, dark, self-deprecating, conceptual, character-driven, earnest, cult
+- Bill Hicks | dark, transgressive, acerbic, observational, conceptual, cult
+- Chris Morris | meta, conceptual, dark, transgressive, acerbic, cult
