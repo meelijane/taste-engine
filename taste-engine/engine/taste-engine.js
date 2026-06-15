@@ -58,8 +58,12 @@ class TasteEngine {
     return md.split('\n')
       .filter(l => l.trim().startsWith('- '))
       .map(l => {
-        const parts = l.slice(2).split(' | ');
-        return { label: parts[0].trim(), tags: parts[1].split(',').map(t => t.trim()) };
+        const parts = l.trim().slice(2).split(' | ');
+        return {
+          label: parts[0].trim(),
+          tags: parts[1].split(',').map(t => t.trim()),
+          opposite: parts[2] ? parts[2].trim() : null   // the low-end pole of the spectrum
+        };
       });
   }
 
@@ -143,11 +147,10 @@ class TasteEngine {
     // canvases) is already in the correct accent. Smoothness comes from the
     // backdrop fade-in + per-screen entrance animation, not a colour morph.
     this._applyTheme();
-    this._buildHomeScreen();
-    this._buildPickerScreen();
+    this._buildPickerScreen();   // the picker IS the section home now
     this._buildResultScreens();
     this._buildAddScreen();
-    this._showScreen('te-home');
+    this._showScreen('te-picker');
     if (window.TasteBackdrop) {
       const d = this.config.domain || '';
       const seed = [...d].reduce((s, c) => (s * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -219,18 +222,22 @@ class TasteEngine {
   // ══════════════════════════════════════════════════
 
   _buildPickerScreen() {
+    const c = this.config;
     const screen = document.getElementById('te-picker');
     screen.innerHTML = `
-      <button class="te-back" id="te-picker-back">← Back</button>
-      <h2 class="te-display" style="font-size:28px" id="te-picker-title">Who do you love?</h2>
-      <p class="te-subtitle">Pick at least ${this.config.minPicks}. <span id="te-sel-count" style="color:var(--accent2);font-weight:700">0 selected</span></p>
+      <p class="te-eyebrow">${this._cap(c.domain)} Taste</p>
+      <h1 class="te-display te-picker-head" id="te-picker-title">${this._formatHeadline(c.headline)}</h1>
+      <p class="te-subtitle">${c.subheading}</p>
+      <p class="te-picker-hint">Pick at least ${c.minPicks} you love — <span id="te-sel-count">0 selected</span></p>
 
       <div class="te-search-wrap">
         <span class="te-search-icon">🔍</span>
-        <input class="te-search" id="te-search" type="text" placeholder="Search ${this.config.itemLabelPlural}…">
+        <input class="te-search" id="te-search" type="text" placeholder="Search or add a${/^[aeiou]/i.test(c.itemLabel) ? 'n' : ''} ${c.itemLabel}…">
       </div>
 
-      <button class="te-filters-toggle" id="te-filters-toggle">⚙ Filters</button>
+      <div class="te-picker-tools">
+        <button class="te-filters-toggle" id="te-filters-toggle">⚙ Filters</button>
+      </div>
       <div class="te-filters te-hidden" id="te-filters"></div>
 
       <div class="te-item-list" id="te-item-list"></div>
@@ -239,24 +246,29 @@ class TasteEngine {
       <div class="te-footer">
         <div class="te-progress"><div class="te-progress-fill" id="te-progress" style="width:0%"></div></div>
         <button class="te-cta" id="te-cta" disabled>
-          <span id="te-cta-label">Select at least ${this.config.minPicks}</span>
+          <span id="te-cta-label">Reveal my taste</span>
           <span class="te-cta-badge te-hidden" id="te-cta-badge">0</span>
         </button>
-        <p class="te-footer-note" id="te-footer-note">Pick ${this.config.itemLabelPlural} you genuinely enjoy</p>
+        <p class="te-footer-note" id="te-footer-note">Pick ${c.minPicks} ${c.itemLabelPlural} to continue</p>
       </div>
     `;
 
-    document.getElementById('te-picker-back').addEventListener('click', () => this._showScreen('te-home'));
     document.getElementById('te-search').addEventListener('input', () => this._filterList());
     document.getElementById('te-filters-toggle').addEventListener('click', () => {
       const el = document.getElementById('te-filters');
       el.classList.toggle('te-hidden');
       document.getElementById('te-filters-toggle').textContent = el.classList.contains('te-hidden') ? '⚙ Filters' : '⚙ Hide filters';
     });
-    document.getElementById('te-cta').addEventListener('click', () => this._runMode());
+    document.getElementById('te-cta').addEventListener('click', () => this._runCombined());
 
     this._buildFilters();
     this._renderItemList();
+  }
+
+  // One flow: picks → the combined result (profile + radar + recs).
+  _runCombined() {
+    this._cachedProfile = null; this._cachedRecs = null; this._lastProfile = null;
+    this._showScreen('te-summary'); // _showScreen triggers _buildSummary
   }
 
   _buildFilters() {
@@ -732,8 +744,9 @@ class TasteEngine {
     const accent2 = g('--accent2') || '#5AA9B8';
     const grid = g('--border') || '#4A2331';
     const muted = g('--text-muted') || '#B08A95';
+    const text = g('--text') || '#F4EEF3';
     return {
-      accent, accent2, grid, muted,
+      accent, accent2, grid, muted, text,
       accentFill: this._hexToRgba(accent, 0.18),
       accentFillStrong: this._hexToRgba(accent, 0.25),
       accent2Fill: this._hexToRgba(accent2, 0.25)
@@ -789,12 +802,27 @@ class TasteEngine {
     return 'Something went wrong. Please try again.';
   }
 
+  // Make a canvas crisp on high-DPR screens: keep logical drawing coords but
+  // back it with devicePixelRatio× pixels. `responsive` lets the main radar
+  // scale to its container (height auto) while staying sharp.
+  _prepCanvas(canvas, responsive) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = canvas._lw || (canvas._lw = canvas.width);
+    const H = canvas._lh || (canvas._lh = canvas.height);
+    const bw = Math.round(W * dpr), bh = Math.round(H * dpr);
+    if (canvas.width !== bw) { canvas.width = bw; canvas.height = bh; }
+    canvas.style.width = W + 'px';
+    canvas.style.height = responsive ? 'auto' : H + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, W, H };
+  }
+
   _drawRadar(canvasId, labels, scores) {
     const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width, H = canvas.height;
-    const cx = W / 2, cy = H / 2 + 10;
-    const R = Math.min(W, H) / 2 - 42;
+    const { ctx, W, H } = this._prepCanvas(canvas, true);
+    const cx = W / 2, cy = H / 2;
+    const R = Math.min(W, H) / 2 - 76; // leave room for full axis labels (e.g. "Improvisational")
     const N = labels.length;
     const pal = this._palette();
 
@@ -827,10 +855,12 @@ class TasteEngine {
       ctx.fillStyle = pal.accent; ctx.fill();
     });
 
-    ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = pal.muted; ctx.textAlign = 'center';
+    ctx.font = "700 15px 'Hanken Grotesk', sans-serif"; ctx.fillStyle = pal.text || pal.muted; ctx.textAlign = 'center';
     labels.forEach((label, i) => {
-      const p = pt(i, R + 24);
-      ctx.fillText(label, p.x, p.y + 4);
+      const p = pt(i, R + 30);
+      // keep left/right-edge labels inside the canvas
+      const x = Math.max(54, Math.min(W - 54, p.x));
+      ctx.fillText(label, x, p.y + 5);
     });
   }
 
@@ -1049,6 +1079,12 @@ class TasteEngine {
     return this._getAxisScores(norm);
   }
 
+  // YouTube search link to "try the vibe" of a recommendation.
+  _watchUrl(name) {
+    const hint = { comedy: 'stand up', tv: 'trailer', film: 'trailer', podcasts: 'podcast' }[this.config.domain] || '';
+    return 'https://www.youtube.com/results?search_query=' + encodeURIComponent((name + ' ' + hint).trim());
+  }
+
   // ══════════════════════════════════════════════════
   // SUMMARY
   // ══════════════════════════════════════════════════
@@ -1099,6 +1135,17 @@ class TasteEngine {
     await new Promise(r => setTimeout(r, 100));
     this._drawRadar('te-sum-radar', this.axes.map(a=>a.label), myScores);
 
+    // Render the spectrum key (each spoke = high pole ↔ its opposite)
+    const legend = document.getElementById('te-sum-legend');
+    if (legend) {
+      legend.innerHTML = this.axes.map(a => `
+        <div class="te-radar-pole">
+          <span class="te-pole-hi">${a.label}</span>
+          <span class="te-pole-sep">↔</span>
+          <span class="te-pole-lo">${a.opposite || '—'}</span>
+        </div>`).join('');
+    }
+
     // Render recs
     const recContainer = document.getElementById('te-sum-recs');
     recContainer.innerHTML = '';
@@ -1118,6 +1165,9 @@ class TasteEngine {
             <div class="te-rec-tags">${(rec.tags||[]).map(t=>`<span class="te-rec-tag">${t}</span>`).join('')}</div>
           </div>
           ${comedian ? `<div class="te-mini-radar-wrap"><canvas id="${miniId}" width="280" height="280"></canvas></div>` : ''}
+        </div>
+        <div class="te-rec-foot">
+          <a class="te-rec-watch" href="${this._watchUrl(rec.name)}" target="_blank" rel="noopener">▶ Watch on YouTube</a>
         </div>
       `;
       recContainer.appendChild(card);
@@ -1150,8 +1200,7 @@ class TasteEngine {
   _drawMiniRadar(canvasId, myScores, recScores) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width, H = canvas.height;
+    const { ctx, W, H } = this._prepCanvas(canvas, true);
     const cx = W/2, cy = H/2;
     const LABEL_PAD = 36;
     const R = Math.min(W,H)/2 - LABEL_PAD;

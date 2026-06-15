@@ -28,8 +28,8 @@ async function stub(page) {
 const ready = (page, domain) => page.waitForFunction(d => window.engine && window.engine.config && window.engine.config.domain === d, domain);
 const accentOf = page => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().toLowerCase());
 
-async function pickAndRun(page, mode, count = 5) {
-  await page.click(`.te-card[data-mode="${mode}"]`);
+// The instance page IS the picker now: pick N, then reveal the single combined result.
+async function reveal(page, count = 5) {
   const items = page.locator('#te-item-list .te-item');
   await items.first().waitFor();
   for (let i = 0; i < count; i++) await items.nth(i).click();
@@ -59,27 +59,30 @@ test('each section has its own accent colour + active nav, logo returns to hub',
   await expect(page.locator('.te-domain')).toHaveCount(6);
 });
 
-test('picker → profile renders, and the result exports as a PNG', async ({ page }) => {
+test('picks → one combined result (profile + radar + recs), exportable as PNG', async ({ page }) => {
   await stub(page);
   await page.goto('/instances/comedy/');
   await ready(page, 'comedy');
-  await pickAndRun(page, 'profile');
-  await expect(page.locator('#te-profile-title')).toHaveText('Test Archetype');
-  await expect(page.locator('#te-profile-result [data-export]')).toBeVisible();
+  await reveal(page);
+  // single result page combines everything
+  await expect(page.locator('#te-sum-title')).toHaveText('Test Archetype');
+  await expect(page.locator('#te-sum-radar')).toBeVisible();
+  await expect(page.locator('#te-sum-recs .te-rec-name').first()).toHaveText('Recommended One');
+  await expect(page.locator('#te-sum-recs .te-rec-watch').first()).toHaveAttribute('href', /youtube\.com/);
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    page.click('#te-profile-result [data-export]')
+    page.click('#te-summary-content [data-export]')
   ]);
   expect(download.suggestedFilename()).toMatch(/^taste-comedy\.png$/);
 });
 
-test('recommendations render from picks', async ({ page }) => {
+test('recommendations carry match score and a watch link', async ({ page }) => {
   await stub(page);
   await page.goto('/instances/music/');
   await ready(page, 'music');
-  await pickAndRun(page, 'recommend');
-  await expect(page.locator('#te-rec-cards .te-rec-name').first()).toHaveText('Recommended One');
-  await expect(page.locator('.te-match-pill').first()).toContainText('91');
+  await reveal(page);
+  await expect(page.locator('#te-sum-recs .te-rec-name').first()).toHaveText('Recommended One');
+  await expect(page.locator('#te-sum-recs .te-match-pill').first()).toContainText('91');
 });
 
 test('imagery loads (poster art) on the podcasts picker', async ({ page }) => {
@@ -87,7 +90,6 @@ test('imagery loads (poster art) on the podcasts picker', async ({ page }) => {
   await page.goto('/instances/podcasts/');
   await ready(page, 'podcasts');
   await expect(page.evaluate(() => window.engine.items.length)).resolves.toBe(18);
-  await page.click('.te-card[data-mode="profile"]');
   await expect(page.locator('.te-avatar--poster').first()).toBeVisible();
   await expect(page.locator('.te-avatar.has-img').first()).toBeVisible({ timeout: 12000 });
 });
@@ -96,8 +98,32 @@ test('people imagery loads on a person-domain picker', async ({ page }) => {
   await stub(page);
   await page.goto('/instances/comedy/');
   await ready(page, 'comedy');
-  await page.click('.te-card[data-mode="profile"]');
   await expect(page.locator('.te-avatar.has-img').first()).toBeVisible({ timeout: 12000 });
+});
+
+test.describe('feature flag — production launches with comedy only', () => {
+  test('hub hides other sections and teases more', async ({ page }) => {
+    await stub(page);
+    await page.goto('/?prod');
+    await expect(page.locator('.te-topnav-links a')).toHaveCount(1);
+    await expect(page.locator('.te-topnav-links a[data-domain="comedy"]')).toBeVisible();
+    await expect(page.locator('.te-domain[data-domain]')).toHaveCount(1);
+    await expect(page.locator('.te-soon')).toBeVisible();
+  });
+
+  test('direct route to a hidden section bounces to the hub', async ({ page }) => {
+    await stub(page);
+    await page.goto('/instances/music/?prod');
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/');
+  });
+
+  test('comedy still works in production', async ({ page }) => {
+    await stub(page);
+    await page.goto('/instances/comedy/?prod');
+    await ready(page, 'comedy');
+    await expect(page.locator('#te-picker-title')).toBeVisible();
+    await expect(page.locator('#te-item-list .te-item').first()).toBeVisible();
+  });
 });
 
 test.describe('reduced motion', () => {

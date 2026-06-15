@@ -3,39 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taste Engine</title>
+<title>Taste Engine — taste you can name</title>
 <link rel="stylesheet" href="engine/taste-engine.css">
+<script src="engine/te-config.js"></script>
 <style>
-  .te-hero { padding: clamp(40px, 8vh, 92px) var(--gutter) clamp(26px, 4vh, 44px); position: relative; z-index: 1; }
+  .te-hero { padding: clamp(40px, 8vh, 92px) var(--gutter) clamp(20px, 3vh, 32px); position: relative; z-index: 1; }
   .te-hero .te-display { font-size: clamp(3rem, 9vw, 6rem); max-width: 16ch; }
-  .te-hero .te-subtitle { max-width: 50ch; }
+  .te-hero .te-subtitle { max-width: 50ch; margin-bottom: 0; }
+
+  /* ── The idea (manifesto) ── */
+  .te-why { padding: clamp(24px, 4vh, 52px) var(--gutter) clamp(36px, 5vh, 64px); position: relative; z-index: 1; }
+  .te-why-head {
+    font-family: var(--display); font-weight: 800; letter-spacing: -0.03em; line-height: 1.0;
+    font-size: clamp(1.9rem, 4.4vw, 3.1rem); color: var(--text); margin: 6px 0 18px; max-width: 20ch; text-wrap: balance;
+  }
+  .te-why-head em { font-style: normal; color: var(--accent); }
+  .te-why-lead { font-size: clamp(15px, 1.4vw, 19px); line-height: 1.65; color: var(--text-muted); max-width: 64ch; margin-bottom: 38px; }
+  .te-why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 22px; margin-bottom: 34px; max-width: 1080px; }
+  .te-why-point { border-top: 3px solid var(--bar, var(--accent)); padding-top: 16px; }
+  .te-why-title { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--text); margin-bottom: 9px; }
+  .te-why-text { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+  .te-why-close { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; font-size: clamp(17px, 2.2vw, 24px); color: var(--text); }
+  .te-why-close em { font-style: normal; color: var(--accent2); }
+
+  .te-grid-label {
+    font-family: var(--display); font-weight: 700; letter-spacing: -0.02em;
+    font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--text);
+    padding: 0 var(--gutter); margin-bottom: 16px; position: relative; z-index: 1;
+  }
 
   .te-domain-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px; padding: 0 var(--gutter) clamp(60px, 10vh, 120px);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+    gap: 18px; padding: 0 var(--gutter) clamp(60px, 10vh, 120px);
     position: relative; z-index: 1;
     animation: te-rise 0.6s var(--ease) both; animation-delay: 0.05s;
   }
   .te-domain {
-    display: flex; align-items: center; gap: 18px;
-    border: 1.5px solid var(--border); border-radius: 18px; padding: 22px 24px;
+    display: flex; align-items: center; gap: 22px;
+    border: 1.5px solid var(--border); border-radius: 22px; padding: 30px 32px;
     background: var(--surface); text-decoration: none; cursor: pointer;
     transition: border-color 0.18s, background 0.18s, transform 0.14s var(--ease), box-shadow 0.18s;
   }
   .te-domain:hover {
-    border-color: var(--card); transform: translateY(-5px);
-    box-shadow: 0 18px 0 -10px color-mix(in srgb, var(--card) 42%, transparent), 0 28px 60px -28px #000;
+    border-color: var(--card); transform: translateY(-6px);
+    box-shadow: 0 20px 0 -11px color-mix(in srgb, var(--card) 42%, transparent), 0 32px 70px -30px #000;
   }
   .te-domain-icon {
-    width: 58px; height: 58px; border-radius: 16px; flex-shrink: 0;
+    width: 76px; height: 76px; border-radius: 20px; flex-shrink: 0;
     background: var(--card); color: #140a10;
-    display: flex; align-items: center; justify-content: center; font-size: 27px;
+    display: flex; align-items: center; justify-content: center; font-size: 36px;
   }
-  .te-domain-body { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-  .te-domain-name { font-family: var(--display); font-weight: 700; font-size: 21px; color: var(--text); letter-spacing: -0.02em; }
-  .te-domain-desc { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
+  .te-domain-body { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+  .te-domain-name { font-family: var(--display); font-weight: 700; font-size: 26px; color: var(--text); letter-spacing: -0.02em; }
+  .te-domain-desc { font-size: 15px; color: var(--text-muted); line-height: 1.5; }
   .te-domain-arrow { color: var(--card); font-size: 24px; flex-shrink: 0; transition: transform 0.14s; }
   .te-domain:hover .te-domain-arrow { transform: translateX(5px); }
+
+  /* coming-soon teaser (production, when other sections are hidden) */
+  .te-soon { border-style: dashed; cursor: default; opacity: 0.65; }
+  .te-soon:hover { transform: none; box-shadow: none; border-color: var(--border); }
+  .te-soon .te-domain-icon { background: var(--surface2); color: var(--text-dim); }
 
   @media (prefers-reduced-motion: reduce) { .te-domain-grid { animation: none; } }
 </style>
@@ -62,20 +89,42 @@
 <div class="te-hero">
   <p class="te-eyebrow">Taste Engine</p>
   <h1 class="te-display">What do you actually <em>like?</em></h1>
-  <p class="te-subtitle">Pick the things you love in any category and get the read on yourself — in words, on a map, and as a pile of stuff to go discover.</p>
+  <p class="te-subtitle">Pick the things you love. Get the read on yourself — in words, on a map, and as a pile of stuff worth going to find.</p>
 </div>
 
+<section class="te-why">
+  <p class="te-eyebrow">The idea</p>
+  <h2 class="te-why-head">Learn your taste. <em>Choose</em> what you explore.</h2>
+  <p class="te-why-lead">Most apps learn what you like, then quietly decide what you see next — and the reasons stay hidden from you. Taste Engine is built to put you back in charge of that. Pick the things you genuinely love, and it shows you the <strong>shape of your taste</strong>: the styles and through-lines you keep returning to, named in plain language. From there, discovery is a choice you make, not a feed that makes it for you. The goal is simple — rely a little less on algorithms you can't see, and a little more on your own judgment about what's worth your time.</p>
+  <div class="te-why-grid">
+    <div class="te-why-point" style="--bar:#FF8A33">
+      <h3 class="te-why-title">A vocabulary for taste</h3>
+      <p class="te-why-text">Put language to what you actually love — the styles, the textures, the through-lines you keep coming back to.</p>
+    </div>
+    <div class="te-why-point" style="--bar:#B96BFF">
+      <h3 class="te-why-title">Exploration with agency</h3>
+      <p class="te-why-text">Discover by choice, not by autoplay. Nothing gets silently slipped into a feed on your behalf.</p>
+    </div>
+    <div class="te-why-point" style="--bar:#2EC5FF">
+      <h3 class="te-why-title">Recommendations you opt into</h3>
+      <p class="te-why-text">In the spirit of Last.fm and Pandora: suggestions you invite, not curation that decides for you.</p>
+    </div>
+  </div>
+  <p class="te-why-close">More human judgment in the loop. <em>Fewer black boxes.</em></p>
+</section>
+
+<p class="te-grid-label">Start with what you love →</p>
 <div class="te-domain-grid">
-  <a class="te-domain" href="instances/comedy/" style="--card:#FF8A33">
+  <a class="te-domain" href="instances/comedy/" data-domain="comedy" style="--card:#FF8A33">
     <span class="te-domain-icon">🎭</span>
     <span class="te-domain-body">
       <span class="te-domain-name">Comedy</span>
-      <span class="te-domain-desc">79 comedians — stand-up, sketch, panel & improv</span>
+      <span class="te-domain-desc">84 comedians — stand-up, sketch, panel & improv</span>
     </span>
     <span class="te-domain-arrow">→</span>
   </a>
 
-  <a class="te-domain" href="instances/music/" style="--card:#B96BFF">
+  <a class="te-domain" href="instances/music/" data-domain="music" style="--card:#B96BFF">
     <span class="te-domain-icon">🎵</span>
     <span class="te-domain-body">
       <span class="te-domain-name">Music</span>
@@ -84,7 +133,7 @@
     <span class="te-domain-arrow">→</span>
   </a>
 
-  <a class="te-domain" href="instances/tv/" style="--card:#2EC5FF">
+  <a class="te-domain" href="instances/tv/" data-domain="tv" style="--card:#2EC5FF">
     <span class="te-domain-icon">📺</span>
     <span class="te-domain-body">
       <span class="te-domain-name">TV</span>
@@ -93,7 +142,7 @@
     <span class="te-domain-arrow">→</span>
   </a>
 
-  <a class="te-domain" href="instances/film/" style="--card:#FF4D58">
+  <a class="te-domain" href="instances/film/" data-domain="film" style="--card:#FF4D58">
     <span class="te-domain-icon">🎬</span>
     <span class="te-domain-body">
       <span class="te-domain-name">Film</span>
@@ -102,7 +151,7 @@
     <span class="te-domain-arrow">→</span>
   </a>
 
-  <a class="te-domain" href="instances/books/" style="--card:#2FE08A">
+  <a class="te-domain" href="instances/books/" data-domain="books" style="--card:#2FE08A">
     <span class="te-domain-icon">📚</span>
     <span class="te-domain-body">
       <span class="te-domain-name">Books</span>
@@ -111,7 +160,7 @@
     <span class="te-domain-arrow">→</span>
   </a>
 
-  <a class="te-domain" href="instances/podcasts/" style="--card:#25D0C0">
+  <a class="te-domain" href="instances/podcasts/" data-domain="podcasts" style="--card:#25D0C0">
     <span class="te-domain-icon">🎙️</span>
     <span class="te-domain-body">
       <span class="te-domain-name">Podcasts</span>

@@ -78,3 +78,9 @@
 - Maria Bamford | meta, dark, self-deprecating, conceptual, character-driven, earnest, cult
 - Bill Hicks | dark, transgressive, acerbic, observational, conceptual, cult
 - Chris Morris | meta, conceptual, dark, transgressive, acerbic, cult
+- Sheng Wang | observational, dry, deadpan, warm, self-deprecating, laconic
+- Taylor Tomlinson | observational, self-deprecating, dark, quick-witted, warm, mainstream
+- Geoffrey Asmus | acerbic, dark, transgressive, quick-witted, observational
+- Shane Mauss | conceptual, observational, self-deprecating, earnest, absurdist
+- Rory Scovel | improvisational, absurdist, silly, character-driven, surreal, manic
+- Beth Stelling | dark, dry, observational, self-deprecating, acerbic, deadpan

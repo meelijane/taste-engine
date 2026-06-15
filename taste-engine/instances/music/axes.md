@@ -1,8 +1,8 @@
 # Axes
 
-- Cerebral | cerebral, experimental, abstract, minimalist
-- Emotional | melancholic, euphoric, personal, lyrical
-- Dark | dark, melancholic, political
-- Danceable | danceable, rhythmic, euphoric
-- Atmospheric | atmospheric, meditative, lo-fi
-- Polished | polished, vocal-led, melodic
+- Cerebral | cerebral, experimental, abstract, minimalist | Visceral
+- Emotional | melancholic, euphoric, personal, lyrical | Cool
+- Dark | dark, melancholic, political | Bright
+- Danceable | danceable, rhythmic, euphoric | Still
+- Atmospheric | atmospheric, meditative, lo-fi | Direct
+- Polished | polished, vocal-led, melodic | Raw

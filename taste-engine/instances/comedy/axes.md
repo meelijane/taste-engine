@@ -1,10 +1,10 @@
 # Axes
 
-- Technical | technical, conceptual, meta
-- Absurdist | absurdist, surreal, whimsical
-- Dark | dark, transgressive, offensive, acerbic
-- Physical | physical, manic, animated
-- Warm | warm, earnest, self-deprecating
-- Mainstream | mainstream, clean, observational
-- Improvisational | improvisational, character-driven, silly
-- Deadpan | deadpan, dry, laconic, understated, wry
+- Technical | technical, conceptual, meta | Instinctive
+- Absurdist | absurdist, surreal, whimsical | Grounded
+- Dark | dark, transgressive, offensive, acerbic | Wholesome
+- Physical | physical, manic, animated | Cerebral
+- Warm | warm, earnest, self-deprecating | Acerbic
+- Mainstream | mainstream, clean, observational | Cult
+- Improvisational | improvisational, character-driven, silly | Scripted
+- Deadpan | deadpan, dry, laconic, understated, wry | Animated

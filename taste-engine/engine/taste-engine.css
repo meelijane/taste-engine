@@ -105,8 +105,8 @@ body::before {
 }
 .te-display em { font-style: normal; color: var(--accent); }
 .te-subtitle {
-  font-size: clamp(15px, 1.4vw, 18px); color: var(--text-muted); line-height: 1.55;
-  margin-bottom: 36px; max-width: 56ch;
+  font-size: clamp(16px, 1.6vw, 20px); font-weight: 500; color: var(--text-muted); line-height: 1.6;
+  margin-bottom: 28px; max-width: 58ch;
 }
 .te-back {
   display: inline-flex; align-items: center; gap: 6px; font-family: var(--body);
@@ -116,7 +116,7 @@ body::before {
 .te-back:hover { gap: 10px; }
 
 /* ── HOME CARDS ── */
-.te-home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.te-home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 16px; }
 .te-card {
   border: 1.5px solid var(--border); border-radius: var(--radius);
   padding: 22px; background: var(--surface); cursor: pointer;
@@ -139,7 +139,7 @@ body::before {
 .te-card-desc { font-size: 14px; color: var(--text-muted); line-height: 1.45; }
 
 /* ── SEARCH ── */
-.te-search-wrap { position: relative; margin-bottom: 14px; max-width: 560px; }
+.te-search-wrap { position: relative; margin-bottom: 14px; width: 100%; }
 .te-search {
   width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
   border-radius: 12px; padding: 13px 16px 13px 42px; font-size: 15px;
@@ -161,11 +161,15 @@ body::before {
 }
 .te-filter-chip:hover { border-color: var(--text-dim); color: var(--text); }
 .te-filter-chip.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.te-filters-toggle { font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 12px; }
-.te-filters-toggle:hover { color: var(--accent); }
+.te-filters-toggle {
+  font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--text-muted);
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 999px;
+  padding: 7px 14px; cursor: pointer;
+}
+.te-filters-toggle:hover { color: var(--accent); border-color: var(--accent); }
 
 /* ── ITEM LIST ── */
-.te-item-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(248px, 1fr)); gap: 8px; }
+.te-item-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(248px, 100%), 1fr)); gap: 8px; }
 .te-item {
   display: flex; align-items: center; gap: 13px; padding: 11px 14px;
   border-radius: 12px; cursor: pointer; border: 1.5px solid transparent;
@@ -311,16 +315,82 @@ body::before {
 .te-rec-header { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
 .te-rec-header-text { flex: 1; min-width: 0; }
 .te-mini-radar-wrap { display: flex; justify-content: center; padding: 4px 0; }
+.te-mini-radar-wrap canvas { max-width: 100%; height: auto; }
 
 /* ── SUMMARY ── */
 .te-summary-section { margin-bottom: 32px; }
-.te-summary-section-title { font-family: var(--body); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-dim); margin-bottom: 14px; }
-.te-sum-profile-title { font-family: var(--display); font-size: clamp(22px, 3vw, 30px); font-weight: 800; letter-spacing: -0.02em; color: var(--text); margin-bottom: 10px; }
-.te-sum-profile-body { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 62ch; }
+.te-summary-section-title {
+  display: inline-block; font-family: var(--body); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted);
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 999px;
+  padding: 6px 13px; margin-bottom: 14px;
+}
+.te-sum-profile-title { font-family: var(--display); font-size: clamp(30px, 5vw, 50px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.0; color: var(--text); margin-bottom: 16px; text-wrap: balance; }
+.te-sum-profile-body { font-size: clamp(16px, 1.5vw, 19px); font-weight: 500; color: var(--text-muted); line-height: 1.7; max-width: 62ch; }
+
+/* Profile block on a solid card so it reads over the geometric backdrop */
+.te-profile-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px;
+  padding: clamp(22px, 3vw, 40px); box-shadow: 0 20px 60px -34px #000;
+}
 
 /* ── LAYOUT GRIDS (full-bleed, breakpoint-free) ── */
-#te-rec-cards, #te-sum-recs { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; }
+#te-rec-cards, #te-sum-recs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 16px; align-items: start; }
 #te-rec-cards .te-rec-card, #te-sum-recs .te-rec-card { margin-bottom: 0; }
+
+/* ── PICKER-AS-HOME ── */
+.te-picker-head { font-size: clamp(2.1rem, 5.2vw, 3.6rem); max-width: 18ch; margin-bottom: 14px; }
+.te-picker-hint {
+  font-family: var(--body); font-size: 15px; font-weight: 700; color: var(--text-muted);
+  margin-bottom: 18px; text-shadow: 0 1px 10px var(--bg), 0 0 2px var(--bg);
+}
+.te-picker-hint span { color: var(--accent2); }
+.te-picker-tools { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+
+/* ── GEOMETRIC LOADER ── */
+.te-geo-loader { position: relative; width: 56px; height: 56px; }
+.te-geo-loader span {
+  position: absolute; inset: 0; border: 3px solid var(--accent); border-radius: 6px;
+  animation: te-geo 1.6s var(--ease) infinite;
+}
+.te-geo-loader span:nth-child(2) { border-color: var(--accent2); animation-delay: -0.53s; }
+.te-geo-loader span:nth-child(3) { border-color: var(--accent); opacity: 0.5; animation-delay: -1.06s; }
+@keyframes te-geo {
+  0%   { transform: rotate(0deg) scale(0.35); opacity: 0.15; }
+  50%  { transform: rotate(180deg) scale(1); opacity: 1; }
+  100% { transform: rotate(360deg) scale(0.35); opacity: 0.15; }
+}
+
+/* ── RESULT: solid radar card (no busy geometry underneath) ── */
+.te-radar-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px;
+  padding: clamp(18px, 2.4vw, 32px); margin: 6px 0 8px;
+  display: flex; flex-direction: column; align-items: center; box-shadow: 0 20px 60px -34px #000;
+}
+.te-radar-card .te-summary-section-title { align-self: flex-start; margin-bottom: 6px; }
+.te-radar-card canvas { max-width: 100%; height: auto; display: block; }
+
+/* radar + spectrum key, side by side on wide screens, stacked on narrow */
+.te-radar-row {
+  display: flex; flex-wrap: wrap; gap: clamp(16px, 3vw, 40px);
+  align-items: center; justify-content: center; width: 100%;
+}
+.te-radar-canvas-wrap { flex: 1 1 340px; min-width: 0; max-width: 620px; display: flex; justify-content: center; }
+.te-radar-legend { flex: 1 1 220px; min-width: 200px; display: grid; gap: 10px; }
+.te-radar-pole { display: flex; align-items: center; gap: 9px; font-size: clamp(13px, 1.3vw, 15px); white-space: nowrap; }
+.te-pole-hi { font-family: var(--body); font-weight: 700; color: var(--accent); }
+.te-pole-sep { color: var(--text-dim); }
+.te-pole-lo { color: var(--text-muted); }
+
+/* ── RESULT: recommendation "watch the vibe" link ── */
+.te-rec-foot { margin-top: 14px; padding-top: 12px; border-top: 1.5px solid var(--border); }
+.te-rec-watch {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--body); font-size: 13px; font-weight: 700; text-decoration: none;
+  color: var(--on-accent2); background: var(--accent2); padding: 8px 14px; border-radius: 999px;
+  transition: transform 0.12s, filter 0.15s;
+}
+.te-rec-watch:hover { transform: translateY(-1px); filter: brightness(1.08); }
 
 /* ── ENTRANCE STAGGER (motion design) ── */
 @keyframes te-fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }

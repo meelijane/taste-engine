@@ -79,3 +79,9 @@
 - Maria Bamford | country:US | format:stand-up,character | era:contemporary
 - Bill Hicks | country:US | format:stand-up | era:classic
 - Chris Morris | country:GB | format:sketch,character | era:contemporary
+- Sheng Wang | country:US | format:stand-up | era:contemporary
+- Taylor Tomlinson | country:US | format:stand-up | era:contemporary
+- Geoffrey Asmus | country:US | format:stand-up | era:contemporary
+- Shane Mauss | country:US | format:stand-up | era:contemporary
+- Rory Scovel | country:US | format:stand-up,improv | era:contemporary
+- Beth Stelling | country:US | format:stand-up | era:contemporary
