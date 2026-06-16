@@ -1203,7 +1203,22 @@ class TasteEngine {
     // Render recs
     const recContainer = document.getElementById('te-sum-recs');
     recContainer.innerHTML = '';
-    this._cachedRecs.forEach((rec, idx) => {
+    if (!this._cachedRecs || !this._cachedRecs.length) {
+      // Empty state: the recommend call returned nothing (or failed). Never leave
+      // the section blank — say so and offer a retry.
+      const empty = document.createElement('div');
+      empty.className = 'te-rec-empty';
+      empty.innerHTML = `
+        <p class="te-rec-empty-title">No recommendations came through.</p>
+        <p class="te-rec-empty-sub">That usually means the request timed out or hit a snag. Your profile and taste map above are still good.</p>
+        <button class="te-rec-retry" type="button">Try again</button>`;
+      empty.querySelector('.te-rec-retry').addEventListener('click', () => {
+        this._cachedRecs = null;
+        this._buildSummary();
+      });
+      recContainer.appendChild(empty);
+    }
+    (this._cachedRecs || []).forEach((rec, idx) => {
       const comedian = this._allItems().find(c => c.name === rec.name);
       const miniId = 'te-sum-mini-' + idx;
       const card = document.createElement('div');
