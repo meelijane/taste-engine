@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "builds": [
+    { "src": "api/*.js", "use": "@vercel/node" },
+    { "src": "taste-engine/index.html", "use": "@vercel/static" },
+    { "src": "taste-engine/engine/**", "use": "@vercel/static" },
+    { "src": "taste-engine/instances/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/([^/.]+)", "dest": "/api/$1.js" },
+    { "src": "/", "dest": "/taste-engine/index.html" },
+    { "src": "/(.+)/", "dest": "/taste-engine/$1/index.html" },
+    { "src": "/(.+)", "dest": "/taste-engine/$1" }
+  ]
+}
