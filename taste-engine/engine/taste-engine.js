@@ -1159,18 +1159,27 @@ class TasteEngine {
       const prompt = this.config.profileUserPrompt.replace('{names}', picks.map(c=>c.name).join(', ')).replace('{topTags}', top.join(', '));
       try {
         const text = await this._callClaude(prompt, this.config.profileSystemPrompt);
-        this._cachedProfile = JSON.parse(text.replace(/```json|```/g,'').trim());
+        this._cachedProfile = this._extractJSON(text) || { title:'Your Taste', body:'', topTags: top.slice(0,5) };
       } catch(e) { this._cachedProfile = { title:'Your Taste', body:'', topTags: top.slice(0,5) }; }
     }
 
     // Recs
     if (!this._cachedRecs) {
-      const notSelected = this._allItems().filter(c => !this.selected.has(c.name));
-      const db = notSelected.map(c => `${c.name} (${(this.tagging[c.name]||[]).join(', ')})`).join('\n');
+      // Send only the most relevant candidates (ranked by tag overlap with the
+      // user's top tags), capped — keeps the prompt small + fast so the request
+      // doesn't stall, and focuses the model on plausible matches.
+      const topSet = new Set(top);
+      const ranked = this._allItems()
+        .filter(c => !this.selected.has(c.name))
+        .map(c => { const tags = this.tagging[c.name] || []; return { c, tags, overlap: tags.reduce((n,t)=> n + (topSet.has(t)?1:0), 0) }; })
+        .sort((a,b) => b.overlap - a.overlap)
+        .slice(0, 45);
+      const db = ranked.map(r => `${r.c.name} (${r.tags.join(', ')})`).join('\n');
       const prompt = this.config.recommendUserPrompt.replace('{names}',picks.map(c=>c.name).join(', ')).replace('{topTags}',top.join(', ')).replace('{database}',db);
       try {
         const text = await this._callClaude(prompt, this.config.recommendSystemPrompt);
-        this._cachedRecs = JSON.parse(text.replace(/```json|```/g,'').trim()).recommendations;
+        const parsed = this._extractJSON(text);
+        this._cachedRecs = (parsed && Array.isArray(parsed.recommendations)) ? parsed.recommendations : [];
       } catch(e) { this._cachedRecs = []; }
     }
 
@@ -1335,6 +1344,16 @@ class TasteEngine {
   // ══════════════════════════════════════════════════
   // CLAUDE API
   // ══════════════════════════════════════════════════
+
+  // Parse a JSON object out of a model reply, tolerating ```fences``` and any
+  // stray prose around it (a common reason recs/profile came back empty).
+  _extractJSON(text) {
+    const cleaned = (text || '').replace(/```json|```/g, '').trim();
+    try { return JSON.parse(cleaned); } catch (e) {}
+    const m = cleaned.match(/[{\[][\s\S]*[}\]]/);
+    if (m) { try { return JSON.parse(m[0]); } catch (e) {} }
+    return null;
+  }
 
   async _callClaude(userPrompt, systemPrompt) {
     // In the Claude chat sandbox, post directly (auth + CORS injected by the host).
