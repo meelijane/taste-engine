@@ -183,7 +183,7 @@ class TasteEngine {
       <div class="te-home-grid">
         <div class="te-card featured" data-mode="profile">
           <div class="te-card-top"><div class="te-card-icon">🎭</div><span class="te-card-name">Your Taste Profile</span></div>
-          <p class="te-card-desc">A portrait of your taste in words — what you love and why.</p>
+          <p class="te-card-desc">A portrait of your taste in words: what you love and why.</p>
         </div>
         <div class="te-card" data-mode="visual">
           <div class="te-card-top"><div class="te-card-icon">🕸️</div><span class="te-card-name">Visualise Your Taste</span></div>
@@ -228,17 +228,18 @@ class TasteEngine {
       <p class="te-eyebrow">${this._cap(c.domain)} Taste</p>
       <h1 class="te-display te-picker-head" id="te-picker-title">${this._formatHeadline(c.headline)}</h1>
       <p class="te-subtitle">${c.subheading}</p>
-      <p class="te-picker-hint">Pick at least ${c.minPicks} you love — <span id="te-sel-count">0 selected</span></p>
+      <p class="te-picker-hint">Pick at least ${c.minPicks} you love · <span id="te-sel-count">0 selected</span></p>
 
-      <div class="te-search-wrap">
-        <span class="te-search-icon">🔍</span>
-        <input class="te-search" id="te-search" type="text" placeholder="Search or add a${/^[aeiou]/i.test(c.itemLabel) ? 'n' : ''} ${c.itemLabel}…">
+      <div class="te-search-block">
+        <div class="te-search-wrap">
+          <span class="te-search-icon">🔍</span>
+          <input class="te-search" id="te-search" type="text" placeholder="Search or add a${/^[aeiou]/i.test(c.itemLabel) ? 'n' : ''} ${c.itemLabel}…">
+        </div>
+        <div class="te-picker-tools">
+          <button class="te-filters-toggle" id="te-filters-toggle">⚙ Filters</button>
+        </div>
+        <div class="te-filters te-hidden" id="te-filters"></div>
       </div>
-
-      <div class="te-picker-tools">
-        <button class="te-filters-toggle" id="te-filters-toggle">⚙ Filters</button>
-      </div>
-      <div class="te-filters te-hidden" id="te-filters"></div>
 
       <div class="te-item-list" id="te-item-list"></div>
       <div id="te-add-inline" class="te-hidden"></div>
@@ -356,21 +357,63 @@ class TasteEngine {
     return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
   }
 
-  async _wikiPhoto(name) {
-    const q = encodeURIComponent(`${name} ${this.config.itemLabel || ''}`.trim());
+  // Does the article title plausibly name this person? Word-boundary match, so
+  // "Anna Garcia" doesn't latch onto "JoAnna Garcia Swisher" via a substring.
+  _nameInTitle(name, title) {
+    const strip = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const titleWords = strip(title).split(/[^a-z0-9]+/).filter(Boolean);
+    const tokens = strip(name).split(/[^a-z0-9]+/).filter(t => t.length >= 2);
+    return tokens.length > 0 && tokens.every(tok => titleWords.some(w => w === tok || w.startsWith(tok)));
+  }
+
+  async _wikiSearchPhoto(name, suffix) {
+    const q = encodeURIComponent(`${name} ${suffix}`.trim());
     const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}` +
-                `&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=240&format=json&origin=*`;
+                `&gsrlimit=8&prop=pageimages&piprop=thumbnail&pithumbsize=240&format=json&origin=*`;
     try {
       const res = await fetch(url);
       const data = await res.json();
-      const page = (data.query && data.query.pages ? Object.values(data.query.pages) : [])[0];
-      if (page && page.thumbnail) {
-        // Only trust the image if the article title actually matches the searched
-        // name — Wikipedia's fuzzy search otherwise returns a popular near-miss
-        // (e.g. "Grant O'Brien" → "Conan O'Brien").
-        const title = this._normName(page.title);
-        const tokens = name.split(/\s+/).map(t => this._normName(t)).filter(t => t.length >= 2);
-        if (tokens.length && tokens.every(t => title.includes(t))) return page.thumbnail.source;
+      const pages = (data.query && data.query.pages ? Object.values(data.query.pages) : [])
+        .sort((a, b) => (a.index || 0) - (b.index || 0));
+      // First hit that has a photo AND whose title matches the name — skips the
+      // popular near-miss (e.g. "Amy Poehler" → "Greg Poehler") and thumbnail-less
+      // results (e.g. "Aziz Ansari" → his comedy special instead of his bio).
+      for (const p of pages) {
+        if (p.thumbnail && this._nameInTitle(name, p.title)) return p.thumbnail.source;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  async _wikiPhoto(name) {
+    // Suffix-disambiguated search first (rescues common names), then a bare
+    // search (rescues people the suffix mis-ranks), then the REST summary page.
+    let src = await this._wikiSearchPhoto(name, this.config.itemLabel || '');
+    if (!src) src = await this._wikiSearchPhoto(name, '');
+    if (src) return src;
+    try {
+      const res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(name.replace(/ /g, '_')));
+      if (res.ok) {
+        const d = await res.json();
+        if (d.thumbnail && d.thumbnail.source && this._nameInTitle(name, d.title || name)) return d.thumbnail.source;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  // Keyless fallback: Wikidata P18 portrait (Special:FilePath redirects to the
+  // Commons file). Catches people whose Wikipedia article carries no page image.
+  async _wikidataPhoto(name) {
+    try {
+      const s = await fetch(`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=en&type=item&limit=5&format=json&origin=*`);
+      const sd = await s.json();
+      for (const hit of (sd.search || [])) {
+        if (!this._nameInTitle(name, hit.label || '')) continue;
+        const e = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${hit.id}&property=P18&format=json&origin=*`);
+        const ed = await e.json();
+        const claim = ed.claims && ed.claims.P18 && ed.claims.P18[0];
+        const file = claim && claim.mainsnak && claim.mainsnak.datavalue && claim.mainsnak.datavalue.value;
+        if (file) return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=240`;
       }
     } catch (e) {}
     return null;
@@ -379,7 +422,7 @@ class TasteEngine {
   async _getMedia(name) {
     this._mediaCache = this._mediaCache || {};
     if (name in this._mediaCache) return this._mediaCache[name];
-    const lsKey = 'te-media:v1:' + this.config.domain + ':' + name;
+    const lsKey = 'te-media:v2:' + this.config.domain + ':' + name;
     try {
       const cached = localStorage.getItem(lsKey);
       if (cached !== null) { this._mediaCache[name] = cached || null; return this._mediaCache[name]; }
@@ -395,6 +438,17 @@ class TasteEngine {
       } catch (e) {}
     } else {
       src = await this._wikiPhoto(name);
+      if (!src) src = await this._wikidataPhoto(name);
+      // Last resort for people Wikipedia/Wikidata has no usable portrait of: TMDB's
+      // person database (server-proxied, name-validated, needs TMDB_API_KEY). Catches
+      // comedians who appear in film/TV but lack a photo-bearing free-source article.
+      if (!src) {
+        try {
+          const res = await fetch(`/api/image?source=tmdb&type=person&q=${encodeURIComponent(name)}`);
+          const data = await res.json();
+          src = data.url || null;
+        } catch (e) {}
+      }
     }
 
     this._mediaCache[name] = src;
@@ -773,7 +827,7 @@ class TasteEngine {
       set('--bg', `hsl(${h}, 34%, 8%)`);
       set('--surface', `hsl(${h}, 28%, 11%)`);
       set('--surface2', `hsl(${h}, 26%, 15%)`);
-      set('--border', `hsl(${h}, 24%, 24%)`);
+      set('--border', `hsl(${h}, 22%, 32%)`);
       set('--text', `hsl(${h}, 20%, 93%)`);
       set('--text-muted', `hsl(${h}, 14%, 66%)`);
       set('--text-dim', `hsl(${h}, 13%, 44%)`);

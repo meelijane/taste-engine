@@ -11,7 +11,7 @@
   --bg:          #0D0B11;
   --surface:     #16121C;
   --surface2:    #211A29;
-  --border:      #332A3E;
+  --border:      #4A3F58;
   --accent:      #FF5C9A;
   --accent2:     #2EC5FF;
   --on-accent:   #1A0710;
@@ -25,10 +25,23 @@
   --text-dim:    #7E7389;
   --footer-bg:   rgba(13,11,17,0.86);
 
+  /* ── Typography scale ── */
   --display: 'Unbounded', system-ui, sans-serif;
   --body: 'Hanken Grotesk', system-ui, sans-serif;
+  --fz-xs:      12px;                     /* meta / tiny labels */
+  --fz-sm:      13.5px;                   /* small UI text */
+  --fz-body:    clamp(15px, 1.05vw, 17px);/* default body copy */
+  --fz-body-lg: clamp(16px, 1.4vw, 19px); /* prominent body */
+  --fz-lead:    clamp(17px, 1.6vw, 21px); /* hero subtitle / manifesto lead */
+  --fw-body:      500;                    /* body weight — a touch bold for legibility on the textured bg */
+  --fw-semibold:  600;
+  --fw-bold:      700;
+  --lh-body:      1.6;
+
+  /* ── Space · radius · motion ── */
   --gutter: clamp(20px, 5vw, 96px);
-  --radius: 16px;
+  --radius: 0;        /* cards, panels, inputs, buttons, media tiles = square corners */
+  --r-pill: 0;        /* fully geometric: corners square everywhere (circular avatars are the one exception) */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -45,6 +58,9 @@ html { background: var(--bg); }
 
 body {
   font-family: var(--body);
+  font-size: var(--fz-body);
+  font-weight: var(--fw-body);
+  line-height: var(--lh-body);
   background: transparent;
   color: var(--text);
   min-height: 100vh;
@@ -59,7 +75,16 @@ body::before {
   content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background: radial-gradient(70% 55% at 88% -5%, var(--accent2-dim), transparent 65%);
 }
+/* Readability scrim: recesses the generative pattern so it reads as texture,
+   never as foreground competing with copy. Sits above the backdrop, below content. */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: rgba(7, 5, 11, 0.22);
+}
 .te-screen, .te-hero, .te-domain-grid { position: relative; z-index: 1; }
+
+/* Solid surface for reading blocks so text never sits on the raw backdrop. */
+.te-panel { background: var(--surface); border: 1.5px solid var(--border); padding: clamp(20px, 3vw, 40px); }
 
 /* ── TOP NAV ── */
 .te-topnav {
@@ -79,7 +104,7 @@ body::before {
 .te-topnav-links { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 .te-topnav-links a {
   font-family: var(--body); font-weight: 600; font-size: 13px; color: var(--text-muted);
-  text-decoration: none; padding: 6px 12px; border-radius: 999px;
+  text-decoration: none; padding: 7px 12px; border-radius: 0;
   transition: color 0.15s, background 0.15s;
 }
 .te-topnav-links a:hover { color: var(--text); background: var(--surface2); }
@@ -96,7 +121,7 @@ body::before {
   display: inline-block; font-family: var(--body); font-weight: 700;
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--on-accent); background: var(--accent);
-  padding: 5px 11px; border-radius: 999px; margin-bottom: 18px;
+  padding: 5px 11px; border-radius: 0; margin-bottom: 18px;
 }
 .te-display {
   font-family: var(--display); font-weight: 800;
@@ -105,8 +130,8 @@ body::before {
 }
 .te-display em { font-style: normal; color: var(--accent); }
 .te-subtitle {
-  font-size: clamp(16px, 1.6vw, 20px); font-weight: 500; color: var(--text-muted); line-height: 1.6;
-  margin-bottom: 28px; max-width: 58ch;
+  font-size: clamp(19px, 2vw, 27px); font-weight: var(--fw-semibold); color: var(--text); line-height: 1.4;
+  margin-bottom: 28px; max-width: 50ch;
 }
 .te-back {
   display: inline-flex; align-items: center; gap: 6px; font-family: var(--body);
@@ -124,7 +149,7 @@ body::before {
 }
 .te-card:hover {
   border-color: var(--accent); background: var(--surface2);
-  transform: translateY(-4px); box-shadow: 0 18px 0 -10px var(--accent-soft), 0 24px 50px -24px #000;
+  transform: translate(-5px, -5px); box-shadow: 11px 11px 0 0 var(--accent);
 }
 .te-card.featured {
   border-color: var(--accent); grid-column: 1 / -1;
@@ -132,47 +157,59 @@ body::before {
 }
 .te-card-top { display: flex; align-items: center; gap: 13px; margin-bottom: 8px; }
 .te-card-icon {
-  width: 42px; height: 42px; border-radius: 12px; background: var(--accent);
+  width: 42px; height: 42px; border-radius: 0; background: var(--accent);
   display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
 }
 .te-card-name { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--text); letter-spacing: -0.02em; }
-.te-card-desc { font-size: 14px; color: var(--text-muted); line-height: 1.45; }
+.te-card-desc { font-size: var(--fz-body); font-weight: var(--fw-body); color: var(--text-muted); line-height: 1.5; }
 
-/* ── SEARCH ── */
-.te-search-wrap { position: relative; margin-bottom: 14px; width: 100%; }
+/* ── SEARCH + FILTERS (one attached block) ── */
+.te-search-block {
+  border: 1.5px solid var(--border); background: var(--surface2);
+  margin-bottom: 22px; transition: border-color 0.14s;
+}
+.te-search-block:focus-within { border-color: var(--accent); }
+
+.te-search-wrap { position: relative; width: 100%; }
 .te-search {
-  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
-  border-radius: 12px; padding: 13px 16px 13px 42px; font-size: 15px;
+  width: 100%; background: transparent; border: none;
+  border-radius: 0; padding: 15px 16px 15px 44px; font-size: 15px;
   color: var(--text); font-family: var(--body); outline: none;
 }
 .te-search::placeholder { color: var(--text-dim); }
-.te-search:focus { border-color: var(--accent); }
-.te-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 14px; pointer-events: none; }
+.te-search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 14px; pointer-events: none; }
 
-/* ── FILTERS ── */
-.te-filters { margin-bottom: 22px; }
-.te-filter-group { margin-bottom: 12px; }
+/* lower compartment: toggle row, divided from the search field */
+.te-picker-tools {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 0; padding: 11px 14px; border-top: 1.5px solid var(--border);
+}
+.te-filters-toggle {
+  font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--text-muted);
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 0;
+  padding: 7px 14px; cursor: pointer; transition: all 0.14s;
+}
+.te-filters-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+/* expandable filter groups, inside the same block */
+.te-filters { padding: 2px 16px 18px; }
+.te-filter-group { margin-bottom: 14px; }
+.te-filter-group:last-child { margin-bottom: 0; }
 .te-filter-label { font-family: var(--body); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 7px; }
 .te-filter-options { display: flex; flex-wrap: wrap; gap: 7px; }
 .te-filter-chip {
-  padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  padding: 6px 13px; border-radius: 0; font-size: 12px; font-weight: 600;
   border: 1.5px solid var(--border); background: var(--surface); color: var(--text-muted);
   cursor: pointer; transition: all 0.14s; font-family: var(--body);
 }
 .te-filter-chip:hover { border-color: var(--text-dim); color: var(--text); }
 .te-filter-chip.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.te-filters-toggle {
-  font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--text-muted);
-  background: var(--surface); border: 1.5px solid var(--border); border-radius: 999px;
-  padding: 7px 14px; cursor: pointer;
-}
-.te-filters-toggle:hover { color: var(--accent); border-color: var(--accent); }
 
 /* ── ITEM LIST ── */
 .te-item-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(248px, 100%), 1fr)); gap: 8px; }
 .te-item {
   display: flex; align-items: center; gap: 13px; padding: 11px 14px;
-  border-radius: 12px; cursor: pointer; border: 1.5px solid transparent;
+  border-radius: 0; cursor: pointer; border: 1.5px solid var(--border);
   background: var(--surface); transition: background 0.14s, border-color 0.14s, transform 0.12s;
 }
 .te-item:hover { background: var(--surface2); transform: translateY(-2px); }
@@ -181,7 +218,7 @@ body::before {
 .te-item-name { font-size: 14px; font-weight: 600; color: var(--text); }
 .te-item-meta { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 .te-item-check {
-  width: 24px; height: 24px; border-radius: 8px; border: 1.5px solid var(--border);
+  width: 24px; height: 24px; border-radius: 0; border: 1.5px solid var(--border);
   flex-shrink: 0; display: flex; align-items: center; justify-content: center;
   font-size: 13px; color: transparent; transition: all 0.14s;
 }
@@ -200,18 +237,18 @@ body::before {
 .te-avatar-sm { width: 40px; height: 40px; font-size: 12px; }
 .te-avatar-md { width: 54px; height: 54px; font-size: 16px; }
 /* Posters / cover art — portrait, rounded-rect instead of circle */
-.te-avatar--poster { border-radius: 9px; background-position: center; }
+.te-avatar--poster { border-radius: 0; background-position: center; }
 .te-avatar--poster.te-avatar-sm { width: 42px; height: 58px; }
 .te-avatar--poster.te-avatar-md { width: 58px; height: 80px; }
 .te-rec-name-wrap { display: flex; align-items: center; gap: 13px; min-width: 0; }
 .te-rec-name-wrap .te-rec-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── ADD INLINE ── */
-.te-add-inline { border: 1.5px dashed var(--border); border-radius: 14px; padding: 16px 18px; margin-top: 14px; background: var(--surface); }
+.te-add-inline { border: 1.5px dashed var(--border); border-radius: 0; padding: 16px 18px; margin-top: 14px; background: var(--surface); }
 .te-add-inline-label { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
 .te-add-inline-label span { color: var(--accent); font-weight: 700; }
 .te-add-btn {
-  width: 100%; padding: 11px; background: var(--accent); border: none; border-radius: 10px;
+  width: 100%; padding: 11px; background: var(--accent); border: none; border-radius: 0;
   color: var(--on-accent); font-size: 13px; font-weight: 700; font-family: var(--body);
   cursor: pointer; transition: transform 0.12s, filter 0.15s;
 }
@@ -224,38 +261,38 @@ body::before {
   width: min(560px, calc(100vw - 32px));
   background: var(--footer-bg); backdrop-filter: blur(14px);
   padding: 16px 20px 18px; border: 1.5px solid var(--border);
-  border-radius: 20px; z-index: 100; box-shadow: 0 20px 60px -20px #000;
+  border-radius: 0; z-index: 100; box-shadow: 0 20px 60px -20px #000;
 }
-.te-progress { height: 4px; background: var(--surface2); border-radius: 999px; margin-bottom: 13px; overflow: hidden; }
-.te-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 999px; transition: width 0.4s var(--ease); }
+.te-progress { height: 4px; background: var(--surface2); border-radius: 0; margin-bottom: 13px; overflow: hidden; }
+.te-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 0; transition: width 0.4s var(--ease); }
 .te-cta {
   width: 100%; padding: 15px; background: var(--accent); color: var(--on-accent);
-  border: none; border-radius: 13px; font-size: 15px; font-weight: 700; font-family: var(--display);
+  border: none; border-radius: 0; font-size: 15px; font-weight: 700; font-family: var(--display);
   letter-spacing: -0.01em; cursor: pointer; display: flex; align-items: center; justify-content: center;
   gap: 9px; transition: transform 0.12s, filter 0.15s;
 }
 .te-cta:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
 .te-cta:disabled { opacity: 0.32; cursor: default; }
-.te-cta-badge { background: rgba(0,0,0,0.22); padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.te-cta-badge { background: rgba(0,0,0,0.22); padding: 2px 9px; border-radius: 0; font-size: 11px; font-weight: 700; }
 .te-footer-note { font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 9px; }
 
 /* ── TAGS ── */
 .te-tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
-.te-tag { padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: var(--body); }
+.te-tag { padding: 6px 13px; border-radius: 0; font-size: 12px; font-weight: 600; font-family: var(--body); }
 .te-tag-lg { background: var(--accent); color: var(--on-accent); font-size: 13px; font-weight: 700; padding: 7px 16px; }
 .te-tag-md { background: var(--accent2-dim); color: var(--accent2); border: 1.5px solid transparent; font-weight: 600; }
 .te-tag-sm { background: transparent; color: var(--text-dim); font-size: 11px; border: 1.5px solid var(--border); }
 
 /* ── RESULTS ── */
 .te-divider { height: 1.5px; background: var(--border); margin: 28px 0; border: none; }
-.te-result-body { font-size: clamp(15px, 1.3vw, 17px); line-height: 1.75; color: var(--text-muted); margin-bottom: 26px; max-width: 62ch; }
+.te-result-body { font-size: var(--fz-body-lg); font-weight: var(--fw-body); line-height: 1.7; color: var(--text-muted); margin-bottom: 26px; max-width: 62ch; }
 .te-result-body strong { color: var(--text); }
 .te-picks-row { display: flex; flex-wrap: wrap; gap: 7px; }
-.te-pick-pill { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--accent); color: var(--on-accent); }
+.te-pick-pill { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 0; background: var(--accent); color: var(--on-accent); }
 
 /* ── NUDGE ── */
-.te-nudge { border: 1.5px solid var(--border); border-radius: 16px; padding: 18px; background: var(--surface); margin-top: 30px; cursor: pointer; transition: border-color 0.18s, transform 0.14s, box-shadow 0.18s; max-width: 540px; }
-.te-nudge:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 16px 40px -22px #000; }
+.te-nudge { border: 1.5px solid var(--border); border-radius: 0; padding: 18px; background: var(--surface); margin-top: 30px; cursor: pointer; transition: border-color 0.18s, transform 0.14s, box-shadow 0.18s; max-width: 540px; }
+.te-nudge:hover { border-color: var(--accent); transform: translate(-4px, -4px); box-shadow: 9px 9px 0 0 var(--accent); }
 .te-nudge-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 6px; }
 .te-nudge-title { font-family: var(--display); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
 .te-nudge-sub { font-size: 12px; color: var(--text-muted); }
@@ -265,16 +302,16 @@ body::before {
 .te-radar-wrap { display: flex; justify-content: center; margin: 10px 0 24px; }
 
 /* ── REC CARDS ── */
-.te-rec-card { border: 1.5px solid var(--border); border-radius: 16px; padding: 18px; background: var(--surface); transition: border-color 0.18s, transform 0.14s, box-shadow 0.18s; }
-.te-rec-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 16px 44px -24px #000; }
+.te-rec-card { border: 1.5px solid var(--border); border-radius: 0; padding: 18px; background: var(--surface); transition: border-color 0.18s, transform 0.14s, box-shadow 0.18s; }
+.te-rec-card:hover { border-color: var(--accent); transform: translate(-4px, -4px); box-shadow: 9px 9px 0 0 var(--accent); }
 .te-rec-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 10px; }
 .te-rec-name { font-family: var(--display); font-weight: 700; font-size: 16px; color: var(--text); letter-spacing: -0.01em; }
-.te-match-pill { font-family: var(--display); font-size: 12px; font-weight: 700; color: var(--on-accent); background: var(--accent); padding: 5px 11px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
-.te-rec-reason { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px; }
+.te-match-pill { font-family: var(--display); font-size: 12px; font-weight: 700; color: var(--on-accent); background: var(--accent); padding: 5px 11px; border-radius: 0; white-space: nowrap; flex-shrink: 0; }
+.te-rec-reason { font-size: var(--fz-body); font-weight: var(--fw-body); color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
 .te-rec-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.te-rec-tag { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: var(--surface2); color: var(--text-muted); border: 1.5px solid var(--border); }
+.te-rec-tag { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 0; background: var(--surface2); color: var(--text-muted); border: 1.5px solid var(--border); }
 .te-rec-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 14px; padding-top: 12px; border-top: 1.5px solid var(--border); }
-.te-already-btn { font-size: 12px; font-weight: 600; color: var(--text-muted); background: none; border: 1.5px solid var(--border); border-radius: 999px; padding: 6px 13px; cursor: pointer; font-family: var(--body); transition: all 0.14s; }
+.te-already-btn { font-size: 12px; font-weight: 600; color: var(--text-muted); background: none; border: 1.5px solid var(--border); border-radius: 0; padding: 6px 13px; cursor: pointer; font-family: var(--body); transition: all 0.14s; }
 .te-already-btn:hover { border-color: var(--accent); color: var(--accent); }
 .te-already-btn.added { color: var(--on-accent); border-color: var(--accent); background: var(--accent); cursor: default; }
 
@@ -288,7 +325,7 @@ body::before {
 /* ── EXPORT (save result) ── */
 .te-export-btn {
   display: inline-flex; align-items: center; gap: 9px; margin-top: 26px;
-  padding: 14px 24px; border: none; border-radius: 999px;
+  padding: 14px 24px; border: none; border-radius: 0;
   background: var(--accent2); color: var(--on-accent2);
   font-family: var(--display); font-weight: 700; font-size: 14px; letter-spacing: -0.01em;
   cursor: pointer; transition: transform 0.12s, filter 0.15s;
@@ -297,18 +334,18 @@ body::before {
 .te-export-btn:active { transform: translateY(0); }
 
 /* ── ADD SCREEN ── */
-.te-add-input { width: 100%; max-width: 520px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 16px; color: var(--text); font-family: var(--body); outline: none; margin-bottom: 12px; }
+.te-add-input { width: 100%; max-width: 520px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 0; padding: 14px 16px; font-size: 16px; color: var(--text); font-family: var(--body); outline: none; margin-bottom: 12px; }
 .te-add-input:focus { border-color: var(--accent); }
 .te-add-input::placeholder { color: var(--text-dim); }
-.te-outline-btn { display: inline-block; padding: 13px 22px; background: var(--accent); border: none; border-radius: 12px; color: var(--on-accent); font-size: 14px; font-weight: 700; font-family: var(--body); cursor: pointer; transition: transform 0.12s, filter 0.15s; }
+.te-outline-btn { display: inline-block; padding: 13px 22px; background: var(--accent); border: none; border-radius: 0; color: var(--on-accent); font-size: 14px; font-weight: 700; font-family: var(--body); cursor: pointer; transition: transform 0.12s, filter 0.15s; }
 .te-outline-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
 .te-outline-btn:disabled { opacity: 0.4; cursor: default; }
 
 /* ── RECALC BAR ── */
-.te-recalc-bar { background: var(--surface2); border: 1.5px solid var(--accent); border-radius: 14px; padding: 12px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.te-recalc-bar { background: var(--surface2); border: 1.5px solid var(--accent); border-radius: 0; padding: 12px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .te-recalc-label { font-size: 13px; color: var(--text-muted); }
 .te-recalc-label span { color: var(--accent); font-weight: 700; }
-.te-recalc-btn { font-family: var(--body); font-size: 13px; font-weight: 700; color: var(--on-accent); background: var(--accent); border: none; border-radius: 999px; padding: 7px 15px; cursor: pointer; white-space: nowrap; transition: transform 0.12s, filter 0.15s; }
+.te-recalc-btn { font-family: var(--body); font-size: 13px; font-weight: 700; color: var(--on-accent); background: var(--accent); border: none; border-radius: 0; padding: 7px 15px; cursor: pointer; white-space: nowrap; transition: transform 0.12s, filter 0.15s; }
 .te-recalc-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
 
 /* ── REC CARD HEADER (mini radar) ── */
@@ -322,15 +359,15 @@ body::before {
 .te-summary-section-title {
   display: inline-block; font-family: var(--body); font-size: 11px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted);
-  background: var(--surface); border: 1.5px solid var(--border); border-radius: 999px;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 0;
   padding: 6px 13px; margin-bottom: 14px;
 }
 .te-sum-profile-title { font-family: var(--display); font-size: clamp(30px, 5vw, 50px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.0; color: var(--text); margin-bottom: 16px; text-wrap: balance; }
-.te-sum-profile-body { font-size: clamp(16px, 1.5vw, 19px); font-weight: 500; color: var(--text-muted); line-height: 1.7; max-width: 62ch; }
+.te-sum-profile-body { font-size: var(--fz-body-lg); font-weight: var(--fw-body); color: var(--text-muted); line-height: 1.7; max-width: 62ch; }
 
 /* Profile block on a solid card so it reads over the geometric backdrop */
 .te-profile-card {
-  background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 0;
   padding: clamp(22px, 3vw, 40px); box-shadow: 0 20px 60px -34px #000;
 }
 
@@ -345,12 +382,11 @@ body::before {
   margin-bottom: 18px; text-shadow: 0 1px 10px var(--bg), 0 0 2px var(--bg);
 }
 .te-picker-hint span { color: var(--accent2); }
-.te-picker-tools { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
 
 /* ── GEOMETRIC LOADER ── */
 .te-geo-loader { position: relative; width: 56px; height: 56px; }
 .te-geo-loader span {
-  position: absolute; inset: 0; border: 3px solid var(--accent); border-radius: 6px;
+  position: absolute; inset: 0; border: 3px solid var(--accent); border-radius: 0;
   animation: te-geo 1.6s var(--ease) infinite;
 }
 .te-geo-loader span:nth-child(2) { border-color: var(--accent2); animation-delay: -0.53s; }
@@ -363,7 +399,7 @@ body::before {
 
 /* ── RESULT: solid radar card (no busy geometry underneath) ── */
 .te-radar-card {
-  background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 0;
   padding: clamp(18px, 2.4vw, 32px); margin: 6px 0 8px;
   display: flex; flex-direction: column; align-items: center; box-shadow: 0 20px 60px -34px #000;
 }
@@ -387,7 +423,7 @@ body::before {
 .te-rec-watch {
   display: inline-flex; align-items: center; gap: 7px;
   font-family: var(--body); font-size: 13px; font-weight: 700; text-decoration: none;
-  color: var(--on-accent2); background: var(--accent2); padding: 8px 14px; border-radius: 999px;
+  color: var(--on-accent2); background: var(--accent2); padding: 8px 14px; border-radius: 0;
   transition: transform 0.12s, filter 0.15s;
 }
 .te-rec-watch:hover { transform: translateY(-1px); filter: brightness(1.08); }

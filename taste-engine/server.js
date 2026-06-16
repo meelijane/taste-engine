@@ -38,7 +38,17 @@ async function imageLookup(source, q, opts) {
   if (imgCache.has(cacheKey)) return imgCache.get(cacheKey);
   let url = null;
   try {
-    if (source === 'tmdb' && TMDB_KEY) {
+    if (source === 'tmdb' && TMDB_KEY && opts.type === 'person') {
+      // Portrait fallback for people (comedians etc.) Wikipedia can't supply.
+      const r = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+      const d = await r.json();
+      const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const want = norm(q);
+      // Take the first result whose name matches the query and has a photo,
+      // so a fuzzy near-miss never returns the wrong face.
+      const hit = (d.results || []).find(p => p.profile_path && norm(p.name) === want);
+      if (hit) url = `https://image.tmdb.org/t/p/w342${hit.profile_path}`;
+    } else if (source === 'tmdb' && TMDB_KEY) {
       const t = opts.type === 'movie' ? 'movie' : 'tv';
       const r = await fetch(`https://api.themoviedb.org/3/search/${t}?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
       const d = await r.json();

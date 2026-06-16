@@ -23,11 +23,15 @@
   // Browser wiring (skipped under a test runner with no document).
   if (typeof document !== 'undefined' && typeof location !== 'undefined') {
     var search = location.search || '';
-    var forceProd = /[?&]prod\b/.test(search);
-    var forceAll = /[?&]all\b/.test(search) || (window.localStorage && window.localStorage.getItem('te-show-all') === '1');
-    var enabled = computeEnabled(location.hostname, { forceProd: forceProd, forceAll: forceAll });
+    var ls = window.localStorage;
+    var host = location.hostname;
+    var onLocalhost = !host || host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || /\.local$/.test(host);
+    var forcedProd = !!(ls && ls.getItem('te-force-prod') === '1');   // dev toggle
+    var forceProd = /[?&]prod\b/.test(search) || forcedProd;
+    var forceAll = /[?&]all\b/.test(search) || (ls && ls.getItem('te-show-all') === '1');
+    var enabled = computeEnabled(host, { forceProd: forceProd, forceAll: forceAll });
     Config.enabled = enabled;
-    Config.isDev = enabled.length > 1 && !forceProd;
+    Config.isDev = onLocalhost;
 
     // Guard: bounce away from a hidden instance before it renders.
     var m = location.pathname.match(/\/instances\/([^\/]+)\//);
@@ -50,7 +54,31 @@
           '<span class="te-domain-desc">New categories to map your taste across are on the way.</span></span>';
         grid.appendChild(d);
       }
+      if (onLocalhost) buildDevBar();
     };
+
+    // Local-dev control panel (localhost only — never ships to production).
+    // Toggles flags by writing localStorage and reloading.
+    function buildDevBar() {
+      if (document.getElementById('te-devbar')) return;
+      var css = '#te-devbar{position:fixed;left:14px;bottom:14px;z-index:9000;pointer-events:none;'
+        + 'display:flex;align-items:center;gap:10px;background:#16121C;border:1.5px solid #332A3E;'
+        + 'color:#BBB0C4;font:600 12px/1 ui-sans-serif,system-ui,sans-serif;padding:9px 12px;'
+        + 'letter-spacing:.02em;box-shadow:0 12px 32px -14px #000;}'
+        + '#te-devbar b{color:#FF5C9A;text-transform:uppercase;letter-spacing:.14em;font-size:10px;}'
+        + '#te-devbar label{display:flex;align-items:center;gap:7px;cursor:pointer;color:#F4EEF3;pointer-events:auto;}'
+        + '#te-devbar input{accent-color:#FF5C9A;width:15px;height:15px;cursor:pointer;margin:0;}';
+      var style = document.createElement('style'); style.textContent = css; document.head.appendChild(style);
+      var bar = document.createElement('div'); bar.id = 'te-devbar';
+      bar.innerHTML = '<b>Dev</b><label><input type="checkbox" id="te-dev-prod"' + (forcedProd ? ' checked' : '')
+        + '> Prod preview (Comedy only)</label>';
+      document.body.appendChild(bar);
+      document.getElementById('te-dev-prod').addEventListener('change', function (e) {
+        if (e.target.checked) ls.setItem('te-force-prod', '1');
+        else ls.removeItem('te-force-prod');
+        location.reload();
+      });
+    }
     if (document.readyState !== 'loading') apply();
     else document.addEventListener('DOMContentLoaded', apply);
   }
